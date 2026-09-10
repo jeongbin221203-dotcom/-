@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대한민국 맞춤 여행 가이드 - 국내 여행지 20선</title>
+    <title>대한민국 맞춤 여행 가이드 - 2박 3일 맵 코스</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Pretendard', sans-serif; }
         .tab-active { background-color: #2563eb; color: white; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* 맵 드래그 방지용 (카드용) */
+        .map-pointer-none { pointer-events: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
@@ -18,21 +23,20 @@
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <span class="text-2xl">✈️</span>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">대한민국 테마별 여행 가이드</h1>
+                <span class="text-2xl">🗺️</span>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">국내 여행 지도 & 2박 3일 플래너</h1>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 font-medium hidden sm:block">서울 출발 기준 상세 타임라인 · 실시간 소요시간 · 정밀 예산 가이드</p>
+            <p class="text-xs sm:text-sm text-slate-500 font-medium hidden sm:block">서울 출발 기준 · 2박 3일 상세 타임라인 · 정밀 예산</p>
         </div>
     </header>
 
-    <section class="bg-gradient-to-br from-blue-600 to-indigo-800 text-white py-12 px-4 sm:px-6 text-center">
-        <div class="max-w-3xl mx-auto">
-            <h2 class="text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight">어디로 떠나고 싶으신가요?</h2>
-            <p class="text-blue-100 text-sm sm:text-base mb-8">지난 10년간 사랑받은 스테디셀러부터 요즘 핫한 핫플, 한적한 힐링 스팟까지 완벽 정리!</p>
+    <section class="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 text-white py-12 px-4 sm:px-6 text-center relative overflow-hidden">
+        <div class="max-w-3xl mx-auto relative z-10">
+            <h2 class="text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight text-white drop-shadow-md">지도로 보는 2박 3일 추천 여행지</h2>
+            <p class="text-slate-300 text-sm sm:text-base mb-8 drop-shadow-sm">메인 화면에서는 한반도 내 위치를, 상세 화면에서는 정확한 동선을 확인하세요.</p>
             
-            <!-- Category Tabs -->
             <div id="categoryTabs" class="flex flex-wrap justify-center gap-2 sm:gap-4">
-                <button onclick="switchTab('steady')" id="btn-steady" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white text-blue-600 tab-active">🌟 10년 스테디 5선</button>
+                <button onclick="switchTab('steady')" id="btn-steady" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white text-blue-600 tab-active transform scale-105">🌟 10년 스테디 5선</button>
                 <button onclick="switchTab('hot')" id="btn-hot" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white/10 text-white hover:bg-white/20">🔥 최근 핫플 5선</button>
                 <button onclick="switchTab('quiet')" id="btn-quiet" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white/10 text-white hover:bg-white/20">🌲 한적한 힐링 5선</button>
                 <button onclick="switchTab('theme')" id="btn-theme" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white/10 text-white hover:bg-white/20">🌊 테마별 추천</button>
@@ -41,727 +45,606 @@
     </section>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
-        <!-- Search and Filter Bar -->
         <div class="mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div class="relative w-full sm:w-96">
-                <input type="text" id="searchInput" oninput="filterDestinations()" placeholder="여행지 이름, 특징 검색..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                <input type="text" id="searchInput" oninput="filterDestinations()" placeholder="여행지 이름, 특징 검색..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow">
                 <span class="absolute left-3 top-3 text-slate-400">🔍</span>
             </div>
-            <div class="text-sm text-slate-500 font-medium" id="resultCount">총 5개 여행지 표시 중</div>
+            <div class="text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1.5 rounded-lg" id="resultCount">총 5개 여행지 표시 중</div>
         </div>
 
-        <!-- Destination Grid -->
         <div id="destinationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamic Content Injected via JS -->
+            <!-- Dynamic Content -->
         </div>
     </main>
 
-    <!-- Detail Modal -->
-    <div id="detailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative my-8 max-h-[90vh] overflow-y-auto">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+    <div id="detailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative my-8 max-h-[90vh] overflow-y-auto transform transition-transform duration-300 scale-100">
+            <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 text-xl font-bold transition-colors z-20">&times;</button>
             <div id="modalContent"></div>
         </div>
     </div>
 
-    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <p>© 2026 대한민국 맞춤 여행 가이드. 서울 출발 기준 비용 및 소요 시간은 실시간 예약 상황에 따라 변동될 수 있습니다.</p>
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 mt-auto">
+        <p>© 2026 대한민국 2박 3일 여행 맵 플래너. 서울 출발 기준 비용 및 소요 시간은 실시간 예약 상황에 따라 변동될 수 있습니다.</p>
     </footer>
 
     <script>
-        // Data Store for Destinations with detailed hourly plans and precise cost/time
         const travelData = {
             steady: [
                 {
-                    id: 's1',
-                    name: '제주도 (서귀포·애월)',
-                    category: 'steady',
-                    theme: '바다/섬',
-                    desc: '변함없는 국민 휴양지. 에메랄드빛 바다와 이국적인 풍경, 수많은 카페와 맛집이 공존하는 곳.',
-                    distance: '항공 이동 (약 1시간 10분 소요)',
-                    transport: '김포공항 출발 ✈️ 국내선 비행기 + 현지 렌터카',
-                    cost: '1박 2일 기준 총 약 25만 ~ 45만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/0284c7/ffffff?text=Jeju+Island',
-                    tips: '렌터카는 최소 출발 2주 전 사전 비교 예약 필수, 해안도로 드라이브 코스 추천',
-                    budgetBreakdown: '왕복 항공권: 약 6~12만 원 | 숙박(1박): 약 8~15만 원 | 렌터카+주유: 약 6~9만 원 | 식비 및 기타: 약 8~12만 원',
+                    id: 's1', name: '제주도 (서귀포·애월)', category: 'steady', theme: '바다/섬',
+                    imageUrl: 'https://images.unsplash.com/photo-1601323326176-353d2bf3e5a3?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '제주특별자치도 서귀포시 중문관광단지',
+                    desc: '에메랄드빛 바다와 한라산이 반기는 2박 3일 국민 휴양지 플랜.',
+                    distance: '비행기 1시간 10분', transport: '김포공항 출발 ✈️ + 렌터카',
+                    cost: '2박 3일 기준 총 약 35만 ~ 60만 원 (1인 기준)',
+                    tips: '렌터카는 출발 3주 전 예약 필수, 2일차는 우도나 성산 쪽 코스 추천',
+                    budgetBreakdown: '왕복 항공권: 약 8~14만 | 숙박(2박): 약 15~25만 | 렌터카: 약 8~12만 | 식비: 약 15만',
                     itinerary: [
-                        {
-                            day: '1일차: 서귀포 및 애월 오션뷰 탐방',
-                            timeline: [
-                                { time: '08:00 - 09:10', desc: '김포공항 출발 ➔ 제주국제공항 도착 (비행기 이동)' },
-                                { time: '09:30 - 10:30', desc: '공항 렌터카 인수 후 애월 해안도로 이동' },
-                                { time: '10:30 - 12:30', desc: '애월 카페거리 산책 및 오션뷰 카페 브런치 & 커피' },
-                                { time: '12:30 - 14:30', desc: '점심 식사 (제주 향토 흑돼지 김치찌개 또는 해물라면)' },
-                                { time: '14:30 - 17:00', desc: '중문관광단지 이동 및 천제연폭포/주상절리대 산책' },
-                                { time: '18:00 ~', desc: '서귀포 시내 숙소 체크인 및 흑돼지 구이 전문점 저녁 식사' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 로컬 시장 투어 및 기념품 쇼핑',
-                            timeline: [
-                                { time: '09:00 - 10:00', desc: '기상 및 숙소 조식 후 체크아웃' },
-                                { time: '10:00 - 12:00', desc: '서귀포 매일올레시장 방문 (오메기떡, 감귤칩 등 기념품 쇼핑)' },
-                                { time: '12:00 - 13:30', desc: '점심 식사 (갈치조림 또는 성게미역국)' },
-                                { time: '13:30 - 15:30', desc: '드라이브 코스 경유하며 제주공항으로 이동' },
-                                { time: '15:30 - 17:00', desc: '렌터카 반납 및 제주공항 탑승 수속' },
-                                { time: '18:10 - 19:25', desc: '제주공항 출발 ➔ 김포공항 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 도착 및 서쪽 해안 탐방', timeline: [
+                            { time: '09:00 - 10:30', desc: '김포공항 출발 ➔ 제주국제공항 도착 및 렌터카 인수' },
+                            { time: '11:00 - 13:00', desc: '애월 해안도로 드라이브 및 오션뷰 카페 브런치' },
+                            { time: '13:00 - 15:00', desc: '협재 해수욕장 산책 및 점심 (해물라면)' },
+                            { time: '16:00 - 18:00', desc: '신창풍차해안도로 일몰 드라이브' },
+                            { time: '18:30 ~', desc: '서귀포 숙소 체크인 및 흑돼지 저녁 식사' }
+                        ]},
+                        { day: '2일차: 자연의 경이로움과 힐링', timeline: [
+                            { time: '09:00 - 12:00', desc: '성산일출봉 등반 또는 섭지코지 산책' },
+                            { time: '12:00 - 13:30', desc: '성산 인근 갈치조림 점심' },
+                            { time: '14:00 - 16:30', desc: '비자림 또는 사려니숲길 피톤치드 힐링' },
+                            { time: '17:00 - 19:00', desc: '동문시장 야시장 투어 및 길거리 음식' }
+                        ]},
+                        { day: '3일차: 중문관광 및 복귀', timeline: [
+                            { time: '10:00 - 12:00', desc: '천제연폭포 및 주상절리 관람' },
+                            { time: '12:30 - 14:00', desc: '고기국수로 점심 식사' },
+                            { time: '14:30 - 15:30', desc: '제주공항 근처 용두암 산책 및 렌터카 반납' },
+                            { time: '16:00 - 17:15', desc: '제주공항 출발 ➔ 김포공항 도착' }
+                        ]}
                     ]
                 },
                 {
-                    id: 's2',
-                    name: '부산 해운대·기장',
-                    category: 'steady',
-                    theme: '바다/도시',
-                    desc: '화려한 도시 인프라와 넓은 해수욕장, 해변열차, 오션뷰 카페까지 즐길 수 있는 대한민국 제1의 해양 도시.',
-                    distance: '서울역 출발 KTX 약 2시간 45분',
-                    transport: 'KTX 경부선 (서울역 ➔ 부산역)',
-                    cost: '1박 2일 기준 총 약 18만 ~ 30만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/0d9488/ffffff?text=Busan+Haeundae',
-                    tips: '블루라인파크 해변열차는 주말 매진이 빠르므로 온라인 사전 예매 권장',
-                    budgetBreakdown: 'KTX 왕복: 약 11만 9천 원 | 숙박(1박): 약 7~15만 원 | 대중교통(지하철/택시): 약 2만 원 | 식비 및 간식: 약 6~9만 원',
+                    id: 's2', name: '부산 해운대·기장', category: 'steady', theme: '바다/도시',
+                    imageUrl: 'https://images.unsplash.com/photo-1582236371569-7c87c91d8487?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '부산광역시 해운대구 해운대해수욕장',
+                    desc: '화려한 오션뷰와 미식의 향연, 부산을 200% 즐기는 3일 코스.',
+                    distance: 'KTX 약 2시간 45분', transport: 'KTX (서울역 ➔ 부산역)',
+                    cost: '2박 3일 기준 총 약 30만 ~ 50만 원',
+                    tips: '해변열차는 주말 매진되니 2주 전 온라인 예매 강력 권장',
+                    budgetBreakdown: 'KTX 왕복: 약 12만 | 숙박(2박): 약 15~25만 | 대중교통/택시: 약 4만 | 식비: 약 15만',
                     itinerary: [
-                        {
-                            day: '1일차: 해운대 해변과 야경 감상',
-                            timeline: [
-                                { time: '09:00 - 11:45', desc: '서울역 출발 ➔ 부산역 도착 (KTX 2시간 45분 소요)' },
-                                { time: '11:45 - 13:00', desc: '해운대 이동 후 원조 돼지국밥으로 점심 식사' },
-                                { time: '13:00 - 15:00', desc: '해운대 해수욕장 산책 및 엘시티 전망대 관람' },
-                                { time: '15:00 - 17:30', desc: '블루라인파크 해변열차 탑승 (미포 ➔ 청사포 구간 오션뷰)' },
-                                { time: '18:00 ~', desc: '숙소 체크인 후 더베이 101 야경 감상 및 수제맥주' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 기장 해안사찰 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 10:30', desc: '기상 및 브런치 카페 방문' },
-                                { time: '10:30 - 12:30', desc: '기장 해동용궁사 방문 (바다 바로 앞에 지어진 고즈넉한 사찰)' },
-                                { time: '12:30 - 14:00', desc: '점심 식사 (기장 멸치쌈밥 또는 해물칼국수)' },
-                                { time: '14:00 - 15:30', desc: '부산역으로 이동' },
-                                { time: '16:00 - 18:45', desc: '부산역 출발 ➔ 서울역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 해운대와 야경', timeline: [
+                            { time: '09:00 - 11:45', desc: '서울역 출발 ➔ 부산역 도착' },
+                            { time: '12:30 - 14:00', desc: '해운대 원조 돼지국밥 점심 식사' },
+                            { time: '14:00 - 16:30', desc: '해운대 해변 산책 및 엑스더스카이 전망대' },
+                            { time: '18:00 ~', desc: '더베이101 야경 감상 및 해물탕 저녁' }
+                        ]},
+                        { day: '2일차: 기장 오션뷰 투어', timeline: [
+                            { time: '10:00 - 13:00', desc: '해동용궁사 방문 및 소원 빌기' },
+                            { time: '13:00 - 15:00', desc: '기장 대형 오션뷰 카페 및 베이커리' },
+                            { time: '15:30 - 17:30', desc: '블루라인파크 해변열차 (송정-미포)' },
+                            { time: '18:30 ~', desc: '광안리로 이동하여 회센터에서 저녁' }
+                        ]},
+                        { day: '3일차: 원도심과 레트로', timeline: [
+                            { time: '10:00 - 12:30', desc: '감천문화마을 스탬프 투어 및 사진 촬영' },
+                            { time: '13:00 - 15:00', desc: '자갈치시장 구경 및 씨앗호떡 등 길거리 간식' },
+                            { time: '15:30 - 16:30', desc: '부산역 밀면 점심 및 출발 대기' },
+                            { time: '17:00 - 19:45', desc: '부산역 출발 ➔ 서울역 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 's3',
-                    name: '강릉 안목·주문진',
-                    category: 'steady',
-                    theme: '바다/카페',
-                    desc: '서울에서 가장 빠르게 동해바다를 만날 수 있는 곳. 커피 거리와 순두부 마을, 신선한 회가 기다리는 곳.',
-                    distance: '서울역/청량리역 KTX 약 1시간 40분',
-                    transport: 'KTX-이음 (서울역/청량리역 ➔ 강릉역)',
-                    cost: '1박 2일 기준 총 약 14만 ~ 24만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/2563eb/ffffff?text=Gang릉+Beach',
-                    tips: '안목해변 커피거리에서 바다를 보며 핸드드립 커피 즐기기',
-                    budgetBreakdown: 'KTX 왕복: 약 5만 6천 원 | 숙박(1박): 약 6~12만 원 | 시내버스/택시: 약 1만 5천 원 | 식비 및 카페: 약 5~8만 원',
+                    id: 's3', name: '강릉 안목·주문진', category: 'steady', theme: '바다/카페',
+                    imageUrl: 'https://images.unsplash.com/photo-1522221685418-4770e5b9f7a9?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '강원특별자치도 강릉시 안목해변',
+                    desc: '푸른 동해와 커피가 있는 강릉 2박 3일 힐링 코스.',
+                    distance: 'KTX 약 1시간 40분', transport: 'KTX-이음 (서울역 ➔ 강릉역)',
+                    cost: '2박 3일 기준 총 약 25만 ~ 40만 원',
+                    tips: '아르떼뮤지엄 강릉은 첫 타임 방문 추천',
+                    budgetBreakdown: 'KTX 왕복: 약 5.6만 | 숙박(2박): 약 12~20만 | 택시비: 약 3만 | 식비/카페: 약 12만',
                     itinerary: [
-                        {
-                            day: '1일차: 동해바다와 커피거리',
-                            timeline: [
-                                { time: '09:00 - 10:40', desc: '청량리역 출발 ➔ 강릉역 도착 (KTX 1시간 40분 소요)' },
-                                { time: '11:00 - 12:30', desc: '초당순두부마을 이동 및 순두부 짬뽕 정식 점심' },
-                                { time: '12:30 - 15:00', desc: '안목해변 커피거리 오션뷰 카페에서 여유로운 시간' },
-                                { time: '15:00 - 17:30', desc: '강문해변 및 아르떼뮤지엄 강릉 미디어아트 관람' },
-                                { time: '18:00 ~', desc: '주문진항 또는 강릉항 숙소 체크인 후 대게/회 저녁 식사' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 오션뷰 산책 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:00', desc: '기상 및 해변 바우길 산책' },
-                                { time: '11:00 - 12:30', desc: '중앙시장 이동하여 장칼국수 및 닭강정 점심' },
-                                { time: '12:30 - 13:30', desc: '강릉역으로 이동' },
-                                { time: '14:00 - 15:45', desc: '강릉역 출발 ➔ 청량리역/서울역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 동해바다 입성', timeline: [
+                            { time: '10:00 - 11:40', desc: '서울역 ➔ 강릉역 도착' },
+                            { time: '12:00 - 14:00', desc: '초당순두부마을 점심 (짬뽕순두부)' },
+                            { time: '14:30 - 17:00', desc: '안목해변 카페거리 및 바다 산책' }
+                        ]},
+                        { day: '2일차: 미디어 아트와 호수', timeline: [
+                            { time: '10:00 - 12:30', desc: '아르떼뮤지엄 강릉 관람' },
+                            { time: '13:00 - 15:30', desc: '경포호 자전거 대여 및 둘레길 산책' },
+                            { time: '18:00 ~', desc: '엄지네 포장마차 꼬막비빔밥 포장 및 숙소 식사' }
+                        ]},
+                        { day: '3일차: 주문진과 시장', timeline: [
+                            { time: '10:00 - 12:00', desc: '주문진 도깨비 촬영지 및 영진해변' },
+                            { time: '13:00 - 15:00', desc: '강릉 중앙시장 닭강정/아이스크림 호떡' },
+                            { time: '16:00 - 17:40', desc: '강릉역 ➔ 서울역 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 's4',
-                    name: '여수 돌산·오동도',
-                    category: 'steady',
-                    theme: '바다/야경',
-                    desc: '낭만적인 밤바다와 해상케이블카, 돌산대교 야경으로 커플과 가족 여행지 모두에게 사랑받는 남도 항구.',
-                    distance: '용산역 KTX 약 3시간',
-                    transport: 'KTX (용산역 ➔ 여수엑스포역)',
-                    cost: '1박 2일 기준 총 황 약 18만 ~ 32만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/4f46e5/ffffff?text=Yeosu+Night',
-                    tips: '여수 밤바다 포장마차 거리 및 해상케이블카 필수 코스',
-                    budgetBreakdown: 'KTX 왕복: 약 8만 4천 원 | 숙박(1박): 약 7~16만 원 | 택시비: 약 2만 원 | 식비: 약 6~10만 원',
+                    id: 's4', name: '여수 돌산·오동도', category: 'steady', theme: '바다/야경',
+                    imageUrl: 'https://images.unsplash.com/photo-1598501306161-597510d9ff44?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '전라남도 여수시 오동도',
+                    desc: '로맨틱한 밤바다를 3일 동안 여유롭게 즐기는 여수 투어.',
+                    distance: 'KTX 약 3시간', transport: 'KTX (용산역 ➔ 여수엑스포역)',
+                    cost: '2박 3일 기준 총 약 28만 ~ 45만 원',
+                    tips: '향일암 일출을 위해 2일차 아침 일찍 출발 권장',
+                    budgetBreakdown: 'KTX 왕복: 약 8.4만 | 숙박(2박): 약 14~20만 | 택시비: 약 3만 | 식비: 약 13만',
                     itinerary: [
-                        {
-                            day: '1일차: 여수 밤바다와 해상케이블카',
-                            timeline: [
-                                { time: '08:30 - 11:35', desc: '용산역 출발 ➔ 여수엑스포역 도착 (KTX 3시간 5분 소요)' },
-                                { time: '11:45 - 13:00', desc: '엑스포 근처 게장 백반 전문점에서 푸짐한 점심 식사' },
-                                { time: '13:00 - 15:30', desc: '오동도 동백숲 산책로 및 방파제 걷기' },
-                                { time: '15:30 - 17:30', desc: '여수 해상케이블카 탑승 (자산공원 ➔ 돌산공원 오션뷰 공중 산책)' },
-                                { time: '18:00 ~', desc: '돌산읍 숙소 체크인 후 여수 낭만포차 거리에서 돌문어삼합 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 향일암 및 귀경',
-                            timeline: [
-                                { time: '09:00 - 12:00', desc: '돌산도 남쪽 향일암 이동 (기암괴석과 바다 일출 명소 사찰)' },
-                                { time: '12:00 - 13:30', desc: '여수 시내로 이동 후 서대회무침 점심 식사' },
-                                { time: '13:30 - 14:30', desc: '여수 특산품(바다김밥, 여수딸기모찌) 구매' },
-                                { time: '15:00 - 18:05', desc: '여수엑스포역 출발 ➔ 용산역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 여수 밤바다', timeline: [{ time: '14:00 - 16:30', desc: '오동도 자전거 트레킹' }, { time: '18:00 - 21:00', desc: '낭만포차 해물삼합 및 돌산대교 야경 케이블카' }] },
+                        { day: '2일차: 테마파크와 예술', timeline: [{ time: '10:00 - 13:00', desc: '여수 예술랜드 조각공원' }, { time: '14:00 - 17:00', desc: '아쿠아플라넷 여수' }] },
+                        { day: '3일차: 먹거리와 귀가', timeline: [{ time: '11:00 - 13:00', desc: '이순신광장 수제버거 및 딸기모찌' }, { time: '14:00 - 17:00', desc: '용산역으로 귀가' }] }
                     ]
                 },
                 {
-                    id: 's5',
-                    name: '전주 한옥마을',
-                    category: 'steady',
-                    theme: '문화/식도락',
-                    desc: '전통 한옥의 아름다움을 간직한 국내 최대 규모의 한옥촌. 한복 체험과 길거리 먹거리의 성지.',
-                    distance: '용산역 KTX 약 1시간 30분 / 고속버스 약 2시간 40분',
-                    transport: 'KTX (용산역 ➔ 전주역) 또는 센트럴시티 고속버스',
-                    cost: '1박 2일 기준 총 약 12만 ~ 22만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/b91c1c/ffffff?text=Jeonju+Hanok',
-                    tips: '경기전 관람 및 전주비빔밥, 막걸리 골목 탐방',
-                    budgetBreakdown: 'KTX 왕복: 약 6만 8천 원 | 한옥 게스트하우스(1박): 약 5~12만 원 | 시내 이동: 약 1만 원 | 식비: 약 5~8만 원',
+                    id: 's5', name: '전주 한옥마을', category: 'steady', theme: '문화/식도락',
+                    imageUrl: 'https://images.unsplash.com/photo-1627918544973-cda614d34eb5?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '전북특별자치도 전주시 한옥마을',
+                    desc: '맛과 멋이 있는 전주 2박 3일 식도락 여행.',
+                    distance: 'KTX 약 1시간 30분', transport: 'KTX (용산역 ➔ 전주역)',
+                    cost: '2박 3일 기준 총 약 22만 ~ 35만 원',
+                    tips: '가맥집(가게 맥주) 체험 필수',
+                    budgetBreakdown: 'KTX 왕복: 약 6.8만 | 숙박(2박): 약 10~18만 | 식비: 약 12만',
                     itinerary: [
-                        {
-                            day: '1일차: 한복 체험과 전통 가옥 산책',
-                            timeline: [
-                                { time: '09:30 - 11:00', desc: '용산역 출발 ➔ 전주역 도착 (KTX 1시간 30분 소요)' },
-                                { time: '11:20 - 12:30', desc: '한옥마을 도착 후 전통 한복 대여 및 착용' },
-                                { time: '12:30 - 14:00', desc: '점심 식사 (전통 전주비빔밥 및 콩나물국밥)' },
-                                { time: '14:00 - 16:30', desc: '경기전, 전동성당 관람 및 한옥마을 골목 산책' },
-                                { time: '16:30 - 18:30', desc: '오목대 전망대 올라가 한옥마을 전경 조망' },
-                                { time: '18:30 ~', desc: '한옥 게스트하우스 체크인 후 전주 막걸리 골목에서 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 남부시장 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:00', desc: '기상 및 조식 후 한옥 숙소 체크아웃' },
-                                { time: '11:00 - 12:30', desc: '전주 남부시장 청년몰 구경 및 피문어빵/바게트버거 간식' },
-                                { time: '12:30 - 13:30', desc: '전주역으로 이동' },
-                                { time: '14:00 - 15:35', desc: '전주역 출발 ➔ 용산역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 한옥마을 입성', timeline: [{ time: '12:00 - 15:00', desc: '한옥마을 거닐며 전통 한옥 감상 및 경기전 관람' }, { time: '18:00 - 20:00', desc: '전주비빔밥 및 모주 저녁식사' }] },
+                        { day: '2일차: 로컬 마켓과 문화', timeline: [{ time: '10:00 - 12:00', desc: '남부시장 청년몰 구경' }, { time: '15:00 - 17:00', desc: '자만벽화마을 산책' }, { time: '19:00 ~', desc: '전일갑오 가맥집 황태구이' }] },
+                        { day: '3일차: 자연과 휴식', timeline: [{ time: '10:00 - 12:00', desc: '덕진공원 연꽃 연못 산책' }, { time: '13:00 - 15:00', desc: '물짜장 점심 후 서울 복귀' }] }
                     ]
                 }
             ],
+            
             hot: [
                 {
-                    id: 'h1',
-                    name: '강원도 양양 (서피비치)',
-                    category: 'hot',
-                    theme: '이국적/서핑',
-                    desc: '이국적인 비치바와 서핑 문화로 MZ세대의 성지로 자리 잡은 핫플레이스.',
-                    distance: '양양고속도로 자차 이용 약 2시간',
-                    transport: '동서울터미널 시외버스 또는 자차',
-                    cost: '1박 2일 기준 총 약 16만 ~ 30만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/ea580c/ffffff?text=Yangyang+Surf',
-                    tips: '인구해변과 죽도해변 일대 트렌디한 펍과 카페 밀집',
-                    budgetBreakdown: '고속버스 왕복: 약 3만 4천 원 | 숙박(1박): 약 8~18만 원 | 서핑 강습 및 렌탈: 약 6~8만 원 | 식비: 약 5~8만 원',
+                    id: 'h1', name: '양양 (서피비치·인구해변)', category: 'hot', theme: '이국적/서핑',
+                    imageUrl: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '강원특별자치도 양양군 현북면 하조대해안길 119 서피비치',
+                    desc: '힙하고 뜨거운 양양의 낮과 밤을 온전히 즐기는 MZ세대 타겟 3일 일정.',
+                    distance: '고속버스 약 2시간 10분', transport: '동서울터미널 ➔ 양양종합여객터미널',
+                    cost: '2박 3일 총 30~45만 원',
+                    tips: '서피비치 내 펍은 저녁 7시 이후 미성년자 출입이 제한됩니다. 인구해변은 저녁에 주차난이 심하니 도보 이동을 권장합니다.',
+                    budgetBreakdown: '왕복 버스: 약 4.2만 | 숙박(2박): 약 15~20만 | 서핑 렌탈/강습: 8만 | 식비 및 주류: 13만',
                     itinerary: [
-                        {
-                            day: '1일차: 서핑 강습과 이국적인 비치바',
-                            timeline: [
-                                { time: '08:30 - 11:00', desc: '동서울터미널 출발 ➔ 양양종합여객버스터미널 도착 (시외버스)' },
-                                { time: '11:00 - 12:30', desc: '택시 이동 후 현지 수제버거로 점심 식사' },
-                                { time: '12:30 - 15:30', desc: '서피비치 입문 서핑 강습 및 자유 서핑 타임' },
-                                { time: '15:30 - 18:00', desc: '해변 빈백에 누워 휴식 및 선셋 감상' },
-                                { time: '18:30 ~', desc: '인구해변 오션뷰 펜션 체크인 후 바비큐 및 펍 파티 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 오션뷰 브런치 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:00', desc: '기상 후 죽도해변 오션뷰 브런치 카페 방문' },
-                                { time: '11:00 - 12:30', desc: '하조대 전망대 및 등대 산책' },
-                                { time: '12:30 - 14:00', desc: '양양터미널 이동 후 장칼국수 점심' },
-                                { time: '14:30 - 17:00', desc: '양양터미널 출발 ➔ 동서울터미널 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 뜨거운 양양 입성', timeline: [
+                            { time: '10:00 - 12:20', desc: '동서울터미널에서 양양으로 이동' },
+                            { time: '13:00 - 14:30', desc: '인구해변 근처 수제버거 또는 막국수로 첫 식사' },
+                            { time: '15:00 - 17:30', desc: '서피비치 방문: 서핑 입문 강습 및 자유 서핑' },
+                            { time: '18:00 - 20:00', desc: '숙소 체크인 후 휴식 및 재정비' },
+                            { time: '20:30 ~', desc: '양리단길(인구해변) 라운지 펍에서 바비큐 및 칵테일' }
+                        ]},
+                        { day: '2일차: 힙스터 해변 투어', timeline: [
+                            { time: '10:00 - 11:30', desc: '느지막한 기상 후 하조대 전망대 산책 및 풍경 감상' },
+                            { time: '12:00 - 13:30', desc: '죽도해변 퓨전 식당에서 점심 식사' },
+                            { time: '14:00 - 16:30', desc: '쏠티캐빈 등 유명 오션뷰 카페에서 커피와 디저트 타임' },
+                            { time: '17:00 - 18:30', desc: '휴휴암 방문하여 이색적인 바다 사찰 구경' },
+                            { time: '19:00 ~', desc: '싱싱한 활어회 센터에서 모듬회 저녁 식사' }
+                        ]},
+                        { day: '3일차: 양양의 전통과 복귀', timeline: [
+                            { time: '10:00 - 12:30', desc: '낙산사 방문: 해수관음상 및 의상대 해안 산책' },
+                            { time: '13:00 - 14:30', desc: '물회 전문점에서 시원하게 점심 식사' },
+                            { time: '15:00 - 16:30', desc: '양양 전통시장 구경(송이버섯, 닭강정)' },
+                            { time: '17:00 - 19:10', desc: '양양터미널 출발 ➔ 동서울터미널 도착' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'h2',
-                    name: '경주 황리단길·동궁과 월지',
-                    category: 'hot',
-                    theme: '역사/감성',
-                    desc: '고풍스러운 한옥과 세련된 편집숍, 베이커리가 어우러진 뉴트로 여행의 메카.',
-                    distance: '신경주역 KTX 약 2시간',
-                    transport: 'KTX (서울역 ➔ 신경주역) 후 시내버스/택시',
-                    cost: '1박 2일 기준 총 약 15만 ~ 28만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/d97706/ffffff?text=Gyeongju+Hwangnidan',
-                    tips: '첨성대 및 동궁과 월지 야경은 밤 9시 이후 방문 추천',
-                    budgetBreakdown: 'KTX 왕복: 약 9만 8천 원 | 한옥스테이(1박): 약 6~14만 원 | 시내 교통: 약 1만 5천 원 | 식비: 약 5~8만 원',
+                    id: 'h2', name: '경주 황리단길·대릉원', category: 'hot', theme: '역사/트렌드',
+                    imageUrl: 'https://images.unsplash.com/photo-1596719114878-18e001c2bb6f?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '경상북도 경주시 황리단길',
+                    desc: '천년의 역사와 세련된 감성이 공존하는 경주 2박 3일 뚜벅이 완벽 코스.',
+                    distance: 'KTX 약 2시간', transport: 'KTX (서울역 ➔ 신경주역) + 시내버스',
+                    cost: '2박 3일 총 25~40만 원',
+                    tips: '황리단길 골목길은 차가 다니기 매우 힘드므로 스쿠터나 전동 자전거 대여를 강력 추천합니다.',
+                    budgetBreakdown: 'KTX 왕복: 약 9.8만 | 숙박(2박): 약 14~18만 | 스쿠터 대여: 4만 | 식비/입장료: 13만',
                     itinerary: [
-                        {
-                            day: '1일차: 황리단길 감성 투어와 환상적인 야경',
-                            timeline: [
-                                { time: '09:00 - 11:05', desc: '서울역 출발 ➔ 신경주역 도착 (KTX 2시간 5분 소요)' },
-                                { time: '11:20 - 12:30', desc: '황리단길 이동 후 한옥 레스토랑에서 점심 (파스타 또는 덮밥)' },
-                                { time: '12:30 - 16:30', desc: '황리단길 아기자기한 소품숍 구경 및 한옥 카페 빵지순례' },
-                                { time: '16:30 - 18:00', desc: '대릉원 (천마총) 산책' },
-                                { time: '18:00 ~', desc: '한옥스테이 체크인 후 경주 특산물 안주와 저녁 식사' },
-                                { time: '20:30 - 22:00', desc: '동궁과 월지(안압지) 야경 관람' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 첨성대 및 교동법주',
-                            timeline: [
-                                { time: '09:00 - 10:30', desc: '기상 및 교동 최부자댁 부근 산책' },
-                                { time: '10:30 - 12:00', desc: '첨성대 및 계림 숲길 걷기' },
-                                { time: '12:00 - 13:30', desc: '경주 명물 쌈밥 정식 점심 식사' },
-                                { time: '13:30 - 14:30', desc: '신경주역으로 이동' },
-                                { time: '15:00 - 17:10', desc: '신경주역 출발 ➔ 서울역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 황리단길의 낮과 밤', timeline: [
+                            { time: '11:00 - 13:00', desc: '서울역 출발 ➔ 신경주역 도착 및 황리단길 이동' },
+                            { time: '13:30 - 15:00', desc: '황리단길 한옥 퓨전 파스타 및 십원빵 간식' },
+                            { time: '15:30 - 18:00', desc: '대릉원 (목련 포토존) 및 고분군 산책' },
+                            { time: '18:30 - 20:00', desc: '저녁 식사 (소갈비찜 또는 육회비빔밥)' },
+                            { time: '20:30 ~', desc: '동궁과 월지(구 안압지)의 환상적인 야경 관람' }
+                        ]},
+                        { day: '2일차: 신라 불교 미술의 정수', timeline: [
+                            { time: '09:30 - 10:30', desc: '아침 일찍 불국사로 이동 (버스 약 40분 소요)' },
+                            { time: '10:30 - 12:30', desc: '불국사 청운교, 백운교 및 다보탑 관람' },
+                            { time: '13:00 - 14:30', desc: '석굴암 산책로 등반 및 내부 관람' },
+                            { time: '15:00 - 16:30', desc: '보문단지로 이동하여 늦은 점심(떡갈비 정식)' },
+                            { time: '17:00 - 19:00', desc: '보문호수 둘레길 산책 및 경주엑스포대공원 타워' }
+                        ]},
+                        { day: '3일차: 여유로운 읍성 투어', timeline: [
+                            { time: '10:00 - 11:30', desc: '교촌한옥마을 및 월정교 아침 산책' },
+                            { time: '12:00 - 13:30', desc: '경주 읍성 일대 레트로 카페 투어' },
+                            { time: '14:00 - 15:30', desc: '교리김밥 등 로컬 맛집 포장 및 황남빵 구매' },
+                            { time: '16:00 - 18:00', desc: '신경주역 출발 ➔ 서울역 복귀' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'h3',
-                    name: '남해 은점마울·독일마을',
-                    category: 'hot',
-                    theme: '이국적/바다',
-                    desc: '푸른 남해바다와 독일식 주택들이 어우러져 이국적인 풍광을 선사하는 힐링 스팟.',
-                    distance: '자차 이용 약 4시간 30분',
-                    transport: '남해버스터미널행 고속버스 또는 자차',
-                    cost: '1박 2일 기준 총 약 18만 ~ 32만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/16a34a/ffffff?text=Namhae+German+Village',
-                    tips: '독일마을 맥주축제 및 원예예술촌 구경',
-                    budgetBreakdown: '고속버스 왕복: 약 4만 8천 원 | 숙박(1박): 약 7~15만 원 | 현지 렌트/택시: 약 4만 원 | 식비: 약 6~9만 원',
+                    id: 'h3', name: '남해 독일마을·다랭이마을', category: 'hot', theme: '이국적/드라이브',
+                    imageUrl: 'https://images.unsplash.com/photo-1597818788461-24da03058fce?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '경상남도 남해군 삼동면 독일로 89-7 독일마을',
+                    desc: '푸른 남해 바다와 주황색 지붕들이 만드는 유럽풍 인생 사진 여행 3일.',
+                    distance: '자차/버스 약 4.5시간', transport: '고속버스 (남부터미널 ➔ 남해) 또는 자차 렌트',
+                    cost: '2박 3일 총 35~45만 원',
+                    tips: '남해는 명소 간 거리가 멀어 렌터카나 자차가 필수입니다. 다랭이마을은 오르막이 가파릅니다.',
+                    budgetBreakdown: '왕복 교통비 및 주유: 약 10만 | 숙박(2박): 약 16~22만 | 식비: 약 14만',
                     itinerary: [
-                        {
-                            day: '1일차: 이국적인 독일마을과 수제 맥주',
-                            timeline: [
-                                { time: '07:30 - 12:10', desc: '센트럴시티 터미널 출발 ➔ 남해버스터미널 도착 (고속버스)' },
-                                { time: '12:30 - 14:00', desc: '독일마을 이동 후 정통 독일 소시지와 슈바인하엑스 점심' },
-                                { time: '14:00 - 16:30', desc: '독일마을 주택가 산책 및 파독 광부 전시관 관람' },
-                                { time: '16:30 - 18:00', desc: '원예예술촌 아기자기한 정원 탐방' },
-                                { time: '18:00 ~', desc: '오션뷰 독일식 펜션 체크인 후 독일 수제 맥주와 저녁 식사' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 금산 보리암 및 귀경',
-                            timeline: [
-                                { time: '09:00 - 12:00', desc: '남해 금산 보리암 방문 (기암괴석 위에서 바라보는 남해 다도해 뷰)' },
-                                { time: '12:00 - 13:30', desc: '멸치쌈밥 전문점에서 남해 향토 점심 식사' },
-                                { time: '13:30 - 14:30', desc: '남해터미널 이동' },
-                                { time: '15:00 - 19:40', desc: '남해터미널 출발 ➔ 서울로 귀경' }
-                            ]
-                        }
+                        { day: '1일차: 독일 맥주와 낭만', timeline: [
+                            { time: '09:00 - 13:30', desc: '서울에서 남해로 이동 (휴게소 점심)' },
+                            { time: '14:30 - 17:30', desc: '독일마을 파독전시관 관람 및 언덕 산책' },
+                            { time: '18:00 - 20:00', desc: '수제 소시지와 정통 독일 맥주로 저녁 식사' },
+                            { time: '20:30 ~', desc: '근처 펜션 체크인 및 바다 야경 휴식' }
+                        ]},
+                        { day: '2일차: 절경과 보리암', timeline: [
+                            { time: '09:30 - 12:30', desc: '금산 보리암 등반 (셔틀버스 이용) 및 한려해상 뷰' },
+                            { time: '13:00 - 14:30', desc: '금산산장 컵라면 또는 인근 해물칼국수 점심' },
+                            { time: '15:30 - 17:30', desc: '가천 다랭이마을 계단식 논과 해안 절벽 산책' },
+                            { time: '18:00 - 20:00', desc: '멸치쌈밥 세트 또는 전복죽으로 저녁 식사' }
+                        ]},
+                        { day: '3일차: 예술과 백사장', timeline: [
+                            { time: '10:00 - 12:00', desc: '원예예술촌 세계 각국의 정원 관람' },
+                            { time: '12:30 - 14:00', desc: '상주은모래비치 솔숲 산책 및 피크닉' },
+                            { time: '14:30 - 15:30', desc: '유자빵, 멸치 등 특산물 쇼핑' },
+                            { time: '16:00 - 20:30', desc: '남해 출발 ➔ 서울로 복귀' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'h4',
-                    name: '충남 태안 (안면도·신두리)',
-                    category: 'hot',
-                    theme: '자연/해변',
-                    desc: '국내 최대의 해안 사구와 아름다운 낙조를 자랑하는 서해안의 보석 같은 휴양지.',
-                    distance: '서해안고속도로 자차 이용 약 2시간 30분',
-                    transport: '남서울터미널 시외버스 또는 자차',
-                    cost: '1박 2일 기준 총 약 13만 ~ 24만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/0284c7/ffffff?text=Taean+Dune',
-                    tips: '신두리 해안사구 탐방 및 꽃지해수욕장 낙조 감상',
-                    budgetBreakdown: '시외버스 왕복: 약 2만 6천 원 | 숙박(1박): 약 6~13만 원 | 현지 교통: 약 3만 원 | 식비: 약 5~8만 원',
+                    id: 'h4', name: '태안 신두리 사구·천리포', category: 'hot', theme: '자연/해변',
+                    imageUrl: 'https://images.unsplash.com/photo-1625055018671-16e6be3bdc57?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '충청남도 태안군 원북면 신두리 신두리해안사구',
+                    desc: '한국의 사막이라 불리는 이색 사구와 서해안의 붉은 낙조를 담은 감성 3일.',
+                    distance: '자차 약 2.5시간', transport: '시외버스 (센트럴시티 ➔ 태안) 또는 자차',
+                    cost: '2박 3일 총 20~35만 원',
+                    tips: '해안사구는 천연기념물로 지정된 보호구역이므로 반드시 정해진 나무 데크 탐방로만 이용해야 합니다.',
+                    budgetBreakdown: '왕복 버스/주유: 약 4만 | 숙박(2박): 약 12~15만 | 식비: 약 12만',
                     itinerary: [
-                        {
-                            day: '1일차: 해안 사구 탐방과 환상적인 낙조',
-                            timeline: [
-                                { time: '09:00 - 11:30', desc: '남서울터미널 출발 ➔ 태안버스터미널 도착 (시외버스)' },
-                                { time: '11:30 - 13:00', desc: '태안 시내에서 게국지(향토 꽃게탕)로 점심 식사' },
-                                { time: '13:00 - 15:30', desc: '신두리 해안사구 탐방 (국내 최대 모래언덕 사막 풍경)' },
-                                { time: '15:30 - 17:30', desc: '안면도 꽃지해수욕장으로 이동' },
-                                { time: '17:30 - 19:00', desc: '꽃지해수욕장 할미·할아비 바위 낙조 감상' },
-                                { time: '19:00 ~', desc: '오션뷰 펜션 체크인 및 바비큐 저녁 식사' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 수목원 산책 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 12:00', desc: '천리포수목원 (바다와 맞닿은 국내 최초 사립 수목원) 산책' },
-                                { time: '12:00 - 13:30', desc: '태안 바지락칼국수로 점심 식사' },
-                                { time: '13:30 - 14:30', desc: '태안터미널 이동' },
-                                { time: '15:00 - 17:30', desc: '태안터미널 출발 ➔ 남서울터미널 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 한국의 사막 걷기', timeline: [
+                            { time: '11:00 - 13:30', desc: '서울 출발 ➔ 태안 입성 및 게국지로 점심 식사' },
+                            { time: '14:30 - 17:00', desc: '신두리 해안사구 센터 관람 및 사막 트레킹' },
+                            { time: '17:30 - 19:00', desc: '두웅습지 산책 및 근처 해변에서 첫 일몰' },
+                            { time: '19:30 ~', desc: '펜션 체크인 후 조개구이 바비큐 파티' }
+                        ]},
+                        { day: '2일차: 수목원과 낙조의 황홀함', timeline: [
+                            { time: '10:00 - 13:00', desc: '천리포수목원 (바다가 보이는 수목원) 관람' },
+                            { time: '13:30 - 15:00', desc: '만리포 해수욕장 근처에서 바지락 칼국수 점심' },
+                            { time: '15:30 - 17:00', desc: '안면도로 이동, 꽃지해수욕장 산책' },
+                            { time: '17:30 - 19:00', desc: '할미·할아비바위 사이로 떨어지는 서해안 일몰 감상' }
+                        ]},
+                        { day: '3일차: 향기로운 허브와 복귀', timeline: [
+                            { time: '10:00 - 13:00', desc: '팜카밀레 허브농원 및 청산수목원 포토 타임' },
+                            { time: '13:30 - 14:30', desc: '허브 비빔밥 또는 태안 로컬 한정식 점심' },
+                            { time: '15:00 - 16:00', desc: '카페 몽산포 등 베이커리 카페 휴식' },
+                            { time: '16:30 - 19:00', desc: '태안 출발 ➔ 서울 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'h5',
-                    name: '춘천 삼악산·소양호',
-                    category: 'hot',
-                    theme: '액티비티/호수',
-                    desc: '국내 최장 케이블카와 레고랜드, 리버뷰 카페가 가득한 주말 나들이 최적지.',
-                    distance: 'ITX-청춘 열차 이용 약 1시간',
-                    transport: '용산/청량리역 ITX-청춘 또는 경춘선 지하철',
-                    cost: '1박 2일 기준 총 약 11만 ~ 20만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/7c3aed/ffffff?text=Chuncheon+Lake',
-                    tips: '닭갈비 골목과 의암호 스카이워크 필수 방문',
-                    budgetBreakdown: 'ITX 왕복: 약 1만 8천 원 | 숙박(1박): 약 6~12만 원 | 케이블카/입장료: 약 2만 3천 원 | 식비: 약 5~7만 원',
+                    id: 'h5', name: '춘천 삼악산 호수 케이블카', category: 'hot', theme: '호수/액티비티',
+                    imageUrl: 'https://images.unsplash.com/photo-1579691653896-1b42fc0693a0?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '강원특별자치도 춘천시 삼악산 호수케이블카',
+                    desc: '푸른 의암호를 가로지르며 액티비티와 레트로 감성을 동시에 잡는 3일.',
+                    distance: 'ITX 약 1시간 10분', transport: 'ITX-청춘 (용산역 ➔ 춘천역)',
+                    cost: '2박 3일 총 22~32만 원',
+                    tips: '케이블카는 바닥이 투명한 크리스탈 캐빈을 타려면 당일 현장보다 온라인 사전 예약이 필수입니다.',
+                    budgetBreakdown: 'ITX 왕복: 약 2.4만 | 숙박(2박): 약 10~14만 | 액티비티/입장료: 6만 | 식비: 10만',
                     itinerary: [
-                        {
-                            day: '1일차: 최장 케이블카와 닭갈비',
-                            timeline: [
-                                { time: '09:30 - 10:30', desc: '용산역 출발 ➔ 춘천역 도착 (ITX-청춘 1시간 소요)' },
-                                { time: '10:40 - 12:30', desc: '춘천 명동 닭갈비골목에서 원조 닭갈비 점심 식사' },
-                                { time: '12:30 - 15:30', desc: '삼악산 호수케이블카 탑승 (의암호와 의암호수 위를 지나는 국내 최장 케이블카)' },
-                                { time: '15:30 - 17:30', desc: '소양강 스카이워크 및 처녀상 산책' },
-                                { time: '18:00 ~', desc: '구봉산 카페거리 리버뷰 펜션 체크인 및 야경 감상 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 공지천 산책 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '공지천 유원지 및 의암공원 산책 (자전거 대여)' },
-                                { time: '11:30 - 13:00', desc: '막국수 체험박물관 인근에서 메밀막국수 점심' },
-                                { time: '13:00 - 14:00', desc: '춘천역 이동' },
-                                { time: '14:30 - 15:35', desc: '춘천역 출발 ➔ 용산역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 의암호 스카이 투어', timeline: [
+                            { time: '11:00 - 12:15', desc: '용산역 출발 ➔ 춘천역 도착' },
+                            { time: '12:30 - 14:00', desc: '명동 닭갈비 골목에서 원조 철판 닭갈비 점심' },
+                            { time: '14:30 - 17:00', desc: '삼악산 호수케이블카 탑승 및 정상 스카이워크' },
+                            { time: '17:30 - 19:00', desc: '구봉산 카페거리(산토리니, 투썸 전망대) 뷰 관람' },
+                            { time: '19:30 ~', desc: '숙소 체크인 및 춘천 중앙시장 야시장 투어' }
+                        ]},
+                        { day: '2일차: 숲속 자전거와 동화 마을', timeline: [
+                            { time: '10:00 - 14:00', desc: '남이섬 입장(배 탑승) 및 잣나무길 자전거 대여 산책' },
+                            { time: '14:30 - 15:30', desc: '숯불 닭갈비 및 막국수로 늦은 점심' },
+                            { time: '16:00 - 18:30', desc: '김유정역 레일바이크 (예약 필수) 체험' },
+                            { time: '19:00 ~', desc: '소양강 댐 인근 쏘가리 매운탕 저녁 식사' }
+                        ]},
+                        { day: '3일차: 호숫가 여유와 미술관', timeline: [
+                            { time: '10:00 - 11:30', desc: '소양강 스카이워크 투명 유리 바닥 걷기' },
+                            { time: '12:00 - 14:00', desc: '애니메이션 박물관 또는 상상마당 춘천 관람' },
+                            { time: '14:30 - 15:30', desc: '호반의 도시 뷰 카페에서 커피 한 잔' },
+                            { time: '16:00 - 17:15', desc: '춘천역 출발 ➔ 용산역 귀가' }
+                        ]}
                     ]
                 }
             ],
+            
             quiet: [
                 {
-                    id: 'q1',
-                    name: '강원도 영월 (단종의 역사와 계곡)',
-                    category: 'quiet',
-                    theme: '자연/산림',
-                    desc: '굽이치는 동강의 비경과 깊은 산골의 정취를 느끼며 사색하기 좋은 힐링 여행지.',
-                    distance: '청량리역 무궁화호/KTX 약 1시간 40분',
-                    transport: '청량리역 출발 열차 또는 동서울터미널 버스',
-                    cost: '1박 2일 기준 총 약 11만 ~ 20만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/047857/ffffff?text=Yeongwol+Valley',
-                    tips: '한반도지형 전망대 및 별마로천문대 야경 관람',
-                    budgetBreakdown: 'KTX-이음/무궁화 왕복: 약 3만 5천 원 | 숙박(1박): 약 5~11만 원 | 시내 교통: 약 2만 원 | 식비: 약 5~7만 원',
+                    id: 'q1', name: '영월 한반도지형·동강', category: 'quiet', theme: '자연/산림',
+                    imageUrl: 'image_174eac.jpg',
+                    mapQuery: '강원특별자치도 영월군 한반도면 한반도로 555 한반도지형',
+                    desc: '굽이치는 맑은 동강과 쏟아지는 밤하늘의 별을 품은 완벽한 휴식처 3일.',
+                    distance: '무궁화호 약 2시간 20분', transport: '청량리역 ➔ 영월역',
+                    cost: '2박 3일 총 22~32만 원',
+                    tips: '별마로천문대는 야간 별자리 관측 인기가 매우 높아 최소 한 달 전 홈페이지 예약이 필수입니다.',
+                    budgetBreakdown: '기차 왕복: 약 3만 | 숙박(2박): 약 10~15만 | 택시/대중교통: 5만 | 식비: 9만',
                     itinerary: [
-                        {
-                            day: '1일차: 한반도지형과 별마로천문대',
-                            timeline: [
-                                { time: '09:00 - 10:45', desc: '청량리역 출발 ➔ 영월역 도착 (KTX-이음 1시간 45분 소요)' },
-                                { time: '11:00 - 12:30', desc: '영월 시내에서 꼴두국수 또는 다슬기해장국 점심 식사' },
-                                { time: '12:30 - 14:30', desc: '한반도지형 전망대 트레킹 산책' },
-                                { time: '14:30 - 17:00', desc: '장릉 (조선 단종의 능) 및 청령포 관람' },
-                                { time: '18:00 ~', desc: '계곡 인근 펜션 체크인 및 휴식' },
-                                { time: '20:00 - 21:30', desc: '별마로천문대 야간 별 관측 투어 (사전예약 필수)' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 동강 래프팅 또는 산책 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '김삿갓문학관 또는 고씨동굴 탐방' },
-                                { time: '11:30 - 13:00', desc: '영월 향토 송어회 또는 메밀국수 점심' },
-                                { time: '13:00 - 14:00', desc: '영월역 이동' },
-                                { time: '14:30 - 16:15', desc: '영월역 출발 ➔ 청량리역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 단종의 애환과 밤하늘', timeline: [
+                            { time: '10:00 - 12:20', desc: '청량리역 출발 ➔ 영월역 도착 (역전 다슬기 해장국)' },
+                            { time: '13:30 - 15:30', desc: '청령포 (단종 유배지) 뗏목 타고 소나무 숲 산책' },
+                            { time: '16:00 - 18:00', desc: '영월 서부시장 (메밀전병, 닭강정 포장)' },
+                            { time: '18:30 - 19:30', desc: '숙소 휴식 및 저녁 식사' },
+                            { time: '20:00 - 22:00', desc: '별마로천문대 야경 관람 및 별자리 관측' }
+                        ]},
+                        { day: '2일차: 한반도를 내려다보며', timeline: [
+                            { time: '10:00 - 12:30', desc: '선암마을 한반도지형 전망대 숲길 트레킹' },
+                            { time: '13:00 - 14:30', desc: '근처 곤드레밥 정식으로 건강한 점심 식사' },
+                            { time: '15:00 - 17:30', desc: '고씨동굴 탐험 (천연기념물 석회동굴)' },
+                            { time: '18:00 ~', desc: '동강 변을 따라 걷는 저녁 산책 및 송어회 저녁' }
+                        ]},
+                        { day: '3일차: 붉은 예술과 커피', timeline: [
+                            { time: '10:00 - 12:30', desc: '젊은달와이파크 (거대한 붉은 대나무 형태의 복합예술공간)' },
+                            { time: '13:00 - 14:30', desc: '수제 햄버거 또는 로컬 백반집 점심' },
+                            { time: '15:00 - 16:30', desc: '요선암 돌개구멍 (기암괴석 계곡) 탁족 및 휴식' },
+                            { time: '17:00 - 19:20', desc: '영월역 출발 ➔ 청량리역 복귀' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'q2',
-                    name: '전남 담양 (메타세쿼이아·죽녹원)',
-                    category: 'quiet',
-                    theme: '자연/휴식',
-                    desc: '초록빛 대나무숲과 곧게 뻗은 메타세쿼이아 길을 걸으며 피톤치드를 만끽하는 곳.',
-                    distance: '고속버스 탑승 약 3시간 20분 (광주환승)',
-                    transport: '센트럴시티 ➔ 광주 유스퀘어 후 담양 버스 이동',
-                    cost: '1박 2일 기준 총 약 12만 ~ 22만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/15803d/ffffff?text=Damyang+Bamboo',
-                    tips: '죽녹원 아침 산책 후 대나무 댓잎 아이스크림 맛보기',
-                    budgetBreakdown: '고속버스 왕복: 약 5만 원 | 숙박(1박): 약 5~12만 원 | 현지 버스: 약 1만 원 | 식비: 약 5~8만 원',
+                    id: 'q2', name: '담양 죽녹원·소쇄원', category: 'quiet', theme: '자연/휴식',
+                    imageUrl: 'https://images.unsplash.com/photo-1574711666661-04285e2cb48d?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '전라남도 담양군 담양읍 죽녹원로 119',
+                    desc: '초록빛 대나무 숲길의 사릿소리와 정자의 운치를 즐기는 3일간의 여백.',
+                    distance: '고속버스 약 3.5시간', transport: '센트럴시티 ➔ 광주유스퀘어 ➔ 담양 버스',
+                    cost: '2박 3일 총 25~38만 원',
+                    tips: '담양 국수거리는 야외 테이블이 명당이며, 죽녹원은 아침 일찍 방문해야 사람이 적어 사진 찍기 좋습니다.',
+                    budgetBreakdown: '버스/현지교통: 약 8만 | 숙박(2박): 약 12~16만 | 식비: 약 12만',
                     itinerary: [
-                        {
-                            day: '1일차: 대나무숲 죽녹원과 메타길',
-                            timeline: [
-                                { time: '08:00 - 11:30', desc: '센트럴시티 출발 ➔ 광주 유스퀘어 도착 후 담양행 버스로 환승' },
-                                { time: '11:30 - 13:00', desc: '담양읍 도착 후 담양 떡갈비 정식 점심 식사' },
-                                { time: '13:00 - 15:30', desc: '죽녹원 대나무숲 산책 및 운수대통길 걷기' },
-                                { time: '15:30 - 17:30', desc: '메타세쿼이아 가죽길 및 메타랜드 산책' },
-                                { time: '18:00 ~', desc: '한적한 펜션 또는 한옥 숙소 체크인 후 휴식' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 관방제림 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '관방제림 (수백 년 된 나무가 늘어선 둑길) 아침 산책' },
-                                { time: '11:30 - 12:30', desc: '댓잎 국수 또는 대통밥으로 점심 식사' },
-                                { time: '12:30 - 14:00', desc: '광주로 이동하여 서울행 고속버스 탑승' },
-                                { time: '14:30 - 18:00', desc: '서울 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 대나무 숲의 바람 소리', timeline: [
+                            { time: '09:00 - 13:00', desc: '서울 출발 ➔ 담양 도착 (터미널 인근 이동)' },
+                            { time: '13:30 - 14:30', desc: '담양 국수거리에서 멸치국수와 열무 댓잎 국수' },
+                            { time: '15:00 - 17:30', desc: '죽녹원 입장 및 8가지 테마 산책로 걷기' },
+                            { time: '17:30 - 18:30', desc: '댓잎 아이스크림 간식 및 관방제림 강둑길 일몰 산책' },
+                            { time: '19:00 ~', desc: '담양식 돼지갈비 구이 저녁 식사' }
+                        ]},
+                        { day: '2일차: 조선 선비의 풍류 정원', timeline: [
+                            { time: '10:00 - 12:30', desc: '메타세쿼이아 가로수길 자전거 대여 및 메타프로방스 구경' },
+                            { time: '13:00 - 14:30', desc: '정통 떡갈비 정식과 대통밥 점심' },
+                            { time: '15:30 - 17:30', desc: '소쇄원 (조선 최고의 민간 정원) 고즈넉한 휴식' },
+                            { time: '18:00 - 19:30', desc: '식영정 등 가사문학관 주변 정자 투어' }
+                        ]},
+                        { day: '3일차: 슬로시티의 여유', timeline: [
+                            { time: '10:00 - 13:00', desc: '창평 슬로시티 삼지내마을 옛 돌담길 산책' },
+                            { time: '13:30 - 15:00', desc: '창평 국밥 (암뽕순대국) 든든한 점심 식사' },
+                            { time: '15:30 - 16:30', desc: '명인 한과나 쌀엿 쇼핑 및 전통 찻집 다도 시간' },
+                            { time: '17:00 - 20:30', desc: '담양 출발 ➔ 서울 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'q3',
-                    name: '충북 제천 (의림지·청풍호)',
-                    category: 'quiet',
-                    theme: '호수/자연',
-                    desc: '청풍호의 잔잔한 호수 풍경과 오랜 역사를 지닌 저수지 의림지가 주는 편안함.',
-                    distance: '제천역 KTX-이음 약 1시간 10분',
-                    transport: '청량리역 출발 KTX-이음 (제천역 하차)',
-                    cost: '1박 2일 기준 총 약 12만 ~ 21만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/0369a1/ffffff?text=Jecheon+Lake',
-                    tips: '청풍호반 케이블카에서 내려다보는 다섬 풍경 장관',
-                    budgetBreakdown: 'KTX 왕복: 약 3만 8천 원 | 숙박(1박): 약 6~12만 원 | 시내 교통: 약 1만 5천 원 | 식비: 약 5~7만 원',
+                    id: 'q3', name: '제천 청풍호·의림지', category: 'quiet', theme: '호수/자연',
+                    imageUrl: 'https://images.unsplash.com/photo-1622287955562-b9e7da10e5cf?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '충청북도 제천시 청풍면 청풍호반케이블카',
+                    desc: '내륙의 바다라 불리는 청풍호의 웅장한 잔잔함에 빠지는 3일.',
+                    distance: 'KTX-이음 약 1시간', transport: '청량리역 ➔ 제천역',
+                    cost: '2박 3일 총 22~35만 원',
+                    tips: '청풍호 관광 모노레일은 멀미가 날 수 있으니 쾌적함을 원하신다면 호반 케이블카를 추천합니다.',
+                    budgetBreakdown: '기차 왕복: 약 3만 | 숙박(2박): 약 12~16만 | 택시/렌트: 6만 | 식비: 10만',
                     itinerary: [
-                        {
-                            day: '1일차: 의림지와 청풍호반 케이블카',
-                            timeline: [
-                                { time: '09:00 - 10:15', desc: '청량리역 출발 ➔ 제천역 도착 (KTX-이음 1시간 15분 소요)' },
-                                { time: '10:30 - 12:00', desc: '삼한시대 저수지 의림지 및 용추폭포 유리전망대 산책' },
-                                { time: '12:00 - 13:30', desc: '제천 약선요리 (약초 비빔밥) 점심 식사' },
-                                { time: '13:30 - 16:30', desc: '청풍호반 케이블카 탑승 (비봉산 정상에서 청풍호 조망)' },
-                                { time: '18:00 ~', desc: '청풍호 인근 레이크뷰 펜션 체크인 및 휴식' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 옥순봉 출렁다리 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '옥순봉 출렁다리 트레킹 (호수 위를 걷는 짜릿함)' },
-                                { time: '11:30 - 13:00', desc: '제천 송어회 또는 매운탕 점심 식사' },
-                                { time: '13:00 - 14:00', desc: '제천역으로 이동' },
-                                { time: '14:30 - 15:45', desc: '제천역 출발 ➔ 청량리역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 내륙의 바다 위를 날다', timeline: [
+                            { time: '11:00 - 12:00', desc: '청량리역 출발 ➔ 제천역 도착' },
+                            { time: '12:30 - 14:00', desc: '제천 명물 두꺼비식당(매운 양푼 갈비) 점심' },
+                            { time: '14:30 - 17:00', desc: '청풍호반 케이블카 탑승 및 비봉산 정상 뷰 포인트' },
+                            { time: '17:30 - 19:00', desc: '청풍문화재단지 역사 산책' },
+                            { time: '19:30 ~', desc: '송어 비빔회 저녁 식사 및 숙소 휴식' }
+                        ]},
+                        { day: '2일차: 천년의 농경 문화와 성지', timeline: [
+                            { time: '10:00 - 12:30', desc: '의림지 및 용추폭포 유리전망대 걷기' },
+                            { time: '13:00 - 14:30', desc: '약채락(제천 약선요리) 한정식으로 건강한 점심' },
+                            { time: '15:30 - 17:30', desc: '배론성지 (가톨릭 성지) 단풍나무 길의 고요한 산책' },
+                            { time: '18:00 - 20:00', desc: '중앙시장 구경 및 메밀 배추전, 빨간오뎅 야식' }
+                        ]},
+                        { day: '3일차: 출렁다리의 아찔함', timeline: [
+                            { time: '10:00 - 12:30', desc: '옥순봉 출렁다리 건너며 청풍호 절경 감상' },
+                            { time: '13:00 - 14:30', desc: '인근 산채 쌈밥집에서 점심 식사' },
+                            { time: '15:00 - 16:30', desc: '호숫가 대형 카페에서 물멍과 커피' },
+                            { time: '17:00 - 18:00', desc: '제천역 출발 ➔ 청량리역 복귀' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'q4',
-                    name: '경상북도 문경 (새재돌고개·오미자)',
-                    category: 'quiet',
-                    theme: '역사/산책',
-                    desc: '옛 선비들이 과거를 보러 넘던 문경새재의 고즈넉한 흙길과 옛 성곽의 여유.',
-                    distance: '자차 이용 약 2시간 15분',
-                    transport: '동서울터미널 버스 또는 자차',
-                    cost: '1박 2일 기준 총 약 10만 ~ 18만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/854d0e/ffffff?text=Mungyeong+Trail',
-                    tips: '문경새재 1관문~3관문 맨발 트레킹 추천',
-                    budgetBreakdown: '고속/시외버스 왕복: 약 3만 2천 원 | 숙박(1박): 약 5~10만 원 | 현지 교통: 약 1만 원 | 식비: 약 5~7만 원',
+                    id: 'q4', name: '문경새재·레일바이크', category: 'quiet', theme: '역사/산책',
+                    imageUrl: 'https://images.unsplash.com/photo-1591873105747-0e2417ea1e34?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '경상북도 문경시 문경읍 새재로 932 문경새재도립공원',
+                    desc: '과거 선비들이 걷던 황토길을 맨발로 거닐며 심신을 치유하는 트레킹 3일.',
+                    distance: '고속버스 약 2시간 10분', transport: '동서울터미널 ➔ 점촌(문경)터미널',
+                    cost: '2박 3일 총 20~32만 원',
+                    tips: '문경새재는 제1관문에서 제3관문까지 맨발 걷기가 유명하므로 발수건과 샌들을 꼭 지참하세요.',
+                    budgetBreakdown: '버스/교통: 약 4만 | 숙박(2박): 약 10~14만 | 식비: 약 9만 | 입장료: 3만',
                     itinerary: [
-                        {
-                            day: '1일차: 문경새재 맨발 걷기 트레킹',
-                            timeline: [
-                                { time: '08:30 - 11:00', desc: '동서울터미널 출발 ➔ 점촌버스터미널 도착' },
-                                { time: '11:00 - 12:00', desc: '문경새재 도립공원으로 이동' },
-                                { time: '12:00 - 13:30', desc: '문경약돌돼지 구이로 든든한 점심 식사' },
-                                { time: '13:30 - 17:00', desc: '문경새재 1관문(주흘관)부터 2관문까지 황토 맨발 길 걷기' },
-                                { time: '18:00 ~', desc: '새재 인근 고즈넉한 한옥 펜션 체크인 및 휴식' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 오미자 테마 터널 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '문경 오미자 테마터널 관람 및 특산품 쇼핑' },
-                                { time: '11:30 - 13:00', desc: '올갱이(다슬기) 해장국 점심 식사' },
-                                { time: '13:00 - 14:00', desc: '점촌버스터미널 이동' },
-                                { time: '14:30 - 17:00', desc: '서울행 버스 탑승 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 선비의 길, 맨발 산책', timeline: [
+                            { time: '10:00 - 12:10', desc: '동서울 출발 ➔ 점촌 터미널 도착' },
+                            { time: '12:30 - 14:00', desc: '약돌 한우 또는 약돌 돼지고기 숯불구이 점심' },
+                            { time: '14:30 - 18:00', desc: '문경새재 도립공원 황톳길 맨발 걷기 및 드라마 세트장' },
+                            { time: '18:30 - 19:30', desc: '발 씻기 및 산채 비빔밥 저녁 식사' },
+                            { time: '20:00 ~', desc: '전통 한옥 숙소 또는 펜션 휴식' }
+                        ]},
+                        { day: '2일차: 철로 위의 낭만', timeline: [
+                            { time: '10:00 - 12:00', desc: '진남교반 일대 철로 자전거 (레일바이크) 체험' },
+                            { time: '12:30 - 14:00', desc: '문경 짬뽕 또는 골막 국수 점심' },
+                            { time: '14:30 - 17:00', desc: '에코월드 (구 석탄박물관) 및 가은 오픈세트장' },
+                            { time: '17:30 - 19:00', desc: '문경 오미자 테마터널 관람 (여름엔 시원, 겨울엔 따뜻)' }
+                        ]},
+                        { day: '3일차: 짜릿한 뷰와 액티비티', timeline: [
+                            { time: '10:00 - 12:30', desc: '단산 모노레일 탑승하여 백두대간 절경 감상' },
+                            { time: '13:00 - 14:30', desc: '손두부 버섯전골 점심' },
+                            { time: '15:00 - 16:30', desc: '문경새재 인근 한옥 카페에서 차 한 잔의 여유' },
+                            { time: '17:00 - 19:10', desc: '점촌 터미널 출발 ➔ 동서울 복귀' }
+                        ]}
                     ]
                 },
                 {
-                    id: 'q5',
-                    name: '전북 무주 (덕유산·구천동)',
-                    category: 'quiet',
-                    theme: '산/계곡',
-                    desc: '맑은 계곡물과 덕유산 국립공원의 웅장한 자연 속에서 프라이빗하게 쉬기 좋은 곳.',
-                    distance: '대전역 환승 또는 고속버스 약 2시간 45분',
-                    transport: '남부버스터미널 / 대전역 경유 무주행 버스',
-                    cost: '1박 2일 기준 총 약 12만 ~ 22만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/374151/ffffff?text=Muju+Mountain',
-                    tips: '무주리조트 곤돌라 타고 향적봉 쉽게 오르기',
-                    budgetBreakdown: '버스 왕복: 약 4만 원 | 숙박(1박): 약 6~12만 원 | 곤돌라 왕복: 약 2만 2천 원 | 식비: 약 5~8만 원',
+                    id: 'q5', name: '무주 덕유산·태권도원', category: 'quiet', theme: '산/계곡',
+                    imageUrl: 'https://images.unsplash.com/photo-1610444315264-b8162ee46c3b?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '전북특별자치도 무주군 설천면 덕유산',
+                    desc: '청정 숲속 맑은 공기와 웅장한 대자연 속에서 즐기는 프라이빗 휴식 3일.',
+                    distance: '고속버스 약 2시간 30분', transport: '남부터미널 ➔ 무주공용버스터미널',
+                    cost: '2박 3일 총 25~38만 원',
+                    tips: '향적봉은 곤돌라로 15분 만에 오를 수 있어 노약자도 쉽게 해발 1600m 절경을 즐길 수 있습니다.',
+                    budgetBreakdown: '버스/현지택시: 약 6만 | 숙박(2박): 약 12~16만 | 식비: 약 10만 | 곤돌라: 2만',
                     itinerary: [
-                        {
-                            day: '1일차: 덕유산 향적봉 곤돌라 등반',
-                            timeline: [
-                                { time: '08:30 - 11:30', desc: '서울 남부버스터미널 출발 ➔ 무주공용버스터미널 도착' },
-                                { time: '11:30 - 13:00', desc: '무주 구천동 계곡 부근에서 산채비빔밥과 더덕구이 점심' },
-                                { time: '13:00 - 16:30', desc: '무주덕유산리조트 곤돌라 탑승 후 향적봉(1,614m)까지 가벼운 등반' },
-                                { time: '18:00 ~', desc: '덕유산 국립공원 인근 펜션 체크인 및 저녁 휴식' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 구천동 어사길 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '구천동 33곡 중 비경인 어사길 계곡 트레킹 산책' },
-                                { time: '11:30 - 13:00', desc: '무주 어죽 또는 민물매운탕 점심 식사' },
-                                { time: '13:00 - 14:00', desc: '무주버스터미널 이동' },
-                                { time: '14:30 - 17:30', desc: '서울행 버스 탑승 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 구름 위의 산책', timeline: [
+                            { time: '10:00 - 12:30', desc: '남부터미널 출발 ➔ 무주 터미널 도착' },
+                            { time: '13:00 - 14:30', desc: '무주 명물 어죽 또는 도리뱅뱅이 점심' },
+                            { time: '15:00 - 17:30', desc: '무주덕유산리조트 곤돌라 탑승 ➔ 향적봉 정상 트레킹' },
+                            { time: '18:00 - 20:00', desc: '구천동 계곡 인근 식당에서 산채 정식 저녁' },
+                            { time: '20:30 ~', desc: '리조트 또는 숲속 펜션 체크인 휴식' }
+                        ]},
+                        { day: '2일차: 활력과 반딧불이', timeline: [
+                            { time: '10:00 - 13:00', desc: '태권도원 전망대 및 태권도 시범 공연 관람' },
+                            { time: '13:30 - 14:30', desc: '가마솥 곰탕이나 국밥으로 점심' },
+                            { time: '15:00 - 17:30', desc: '반디랜드 곤충박물관 및 식물원 산책' },
+                            { time: '18:30 - 20:30', desc: '야외 흑돼지 바비큐 저녁 식사' }
+                        ]},
+                        { day: '3일차: 비밀의 와인 터널', timeline: [
+                            { time: '10:00 - 12:30', desc: '적상산 전망대 드라이브 및 무주 머루와인동굴 시음' },
+                            { time: '13:00 - 14:30', desc: '머루 와인 곁들인 돈까스/파스타 점심' },
+                            { time: '15:00 - 16:30', desc: '라제통문 (신라와 백제의 경계문) 포토 타임' },
+                            { time: '17:00 - 19:30', desc: '무주 터미널 출발 ➔ 서울 복귀' }
+                        ]}
                     ]
                 }
             ],
+            
             theme: [
                 {
-                    id: 't1',
-                    name: '[바다테마] 강릉 안목해변 & 주문진',
-                    category: 'theme',
-                    theme: '테마: 바다',
-                    desc: '동해의 탁 트인 수평선과 오션뷰 카페를 즐기며 파도 소리를 들을 수 있는 바다 여행의 정석.',
-                    distance: 'KTX 1시간 40분',
-                    transport: 'KTX (서울역/청량리역 ➔ 강릉역)',
-                    cost: '1박 2일 기준 총 약 14만 ~ 24만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/0284c7/ffffff?text=Theme+Ocean',
-                    tips: '해변 산책 후 신선한 회 또는 장칼국수 추천',
-                    budgetBreakdown: 'KTX 왕복: 약 5만 6천 원 | 숙박(1박): 약 6~12만 원 | 시내 교통: 약 1만 원 | 식비: 약 5~8만 원',
+                    id: 't1', name: '[바다] 강릉 사근진·경포', category: 'theme', theme: '테마: 바다',
+                    imageUrl: 'https://images.unsplash.com/photo-1621274220349-5abce4c330b6?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '강원특별자치도 강릉시 안목해변',
+                    desc: '탁 트인 동해 바다의 파도 소리만으로 채우는 3일간의 완벽한 오션 테마 투어.',
+                    distance: 'KTX 약 1시간 40분', transport: 'KTX-이음 (서울역 ➔ 강릉역)', cost: '2박 3일 총 26~42만', 
+                    tips: '바다 전망 카페의 창가 자리를 원하신다면 오전 11시 이전 방문을 추천합니다.', 
+                    budgetBreakdown: 'KTX: 5.6만 | 오션뷰 숙박(2박): 15~20만 | 식비: 12만',
                     itinerary: [
-                        {
-                            day: '1일차: 동해바다 파도 소리와 카페거리',
-                            timeline: [
-                                { time: '09:00 - 10:40', desc: '청량리역 출발 ➔ 강릉역 도착' },
-                                { time: '11:00 - 12:30', desc: '초당순두부마을 점심 식사' },
-                                { time: '12:30 - 16:00', desc: '안목해변 오션뷰 카페 및 해변 백사장 산책' },
-                                { time: '18:00 ~', desc: '주문진항 오션뷰 펜션 체크인 및 모둠회 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 아침 바다 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '주문진 해변 아침 산책 및 커피 한 잔' },
-                                { time: '11:30 - 13:00', desc: '강릉 장칼국수로 점심 식사' },
-                                { time: '13:30 - 15:15', desc: '강릉역 출발 ➔ 서울로 귀경' }
-                            ]
-                        }
+                        { day: '1일차: 커피와 푸른 물결', timeline: [
+                            { time: '12:00 - 13:30', desc: '강릉역 도착 후 강릉 중앙시장 회센터 포장 점심' }, 
+                            { time: '14:30 - 17:00', desc: '안목해변 커피거리 바다멍 및 해변 산책' },
+                            { time: '17:30 - 19:30', desc: '강문해변 솟대다리 일몰 및 수제버거 저녁' }
+                        ]}, 
+                        { day: '2일차: 컬러풀 해변과 예술', timeline: [
+                            { time: '10:00 - 12:30', desc: '사근진해변 무지개 컬러 방파제 포토 타임' },
+                            { time: '13:00 - 14:30', desc: '경포호 인근 초당순두부 전골 점심' },
+                            { time: '15:00 - 17:30', desc: '아르떼뮤지엄 강릉 미디어아트 전시 관람' },
+                            { time: '18:00 - 20:00', desc: '엄지네 포장마차 꼬막 비빔밥 포장 후 숙소 식사' }
+                        ]}, 
+                        { day: '3일차: 솔향기와 아쉬운 작별', timeline: [
+                            { time: '10:00 - 12:30', desc: '송정해변 소나무 숲길 산책 및 해변 피크닉' },
+                            { time: '13:00 - 14:30', desc: '테라로사 본점 커피 팩토리 공장 투어 및 빵/커피' },
+                            { time: '15:00 - 16:40', desc: '강릉역 출발 ➔ 서울 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 't2',
-                    name: '[산·등산테마] 강원도 평창 (오대산·발왕산)',
-                    category: 'theme',
-                    theme: '테마: 산',
-                    desc: '선재길 전나무숲길의 맑은 공기와 탁 트인 능선 조망을 즐길 수 있는 산악 힐링.',
-                    distance: 'KTX 진부역 약 1시간 20분',
-                    transport: 'KTX-이음 (서울역/청량리역 ➔ 진부역)',
-                    cost: '1박 2일 기준 총 약 15만 ~ 26만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/15803d/ffffff?text=Theme+Mountain',
-                    tips: '월정사 전나무숲길 맨발 걷기 강력 추천',
-                    budgetBreakdown: 'KTX 왕복: 약 4만 4천 원 | 숙박(1박): 약 7~15만 원 | 케이블카/입장료: 약 2만 5천 원 | 식비: 약 5~8만 원',
+                    id: 't2', name: '[산] 평창 오대산·대관령', category: 'theme', theme: '테마: 산',
+                    imageUrl: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '강원특별자치도 평창군 대관령면 올림픽로 715 알펜시아 스키점프대',
+                    desc: '올림픽의 짜릿함과 드넓은 양떼목장에서 피톤치드를 가득 마시는 3일.',
+                    distance: 'KTX 약 1시간 30분', transport: 'KTX (서울역 ➔ 진부역/평창역)', cost: '2박 3일 총 25~38만', 
+                    tips: '산간 지역은 기온이 낮으므로 여름에도 얇은 겉옷을 챙기세요.', 
+                    budgetBreakdown: 'KTX: 약 4.5만 | 숲속 펜션(2박): 12~16만 | 식비: 10만 | 입장료: 3만',
                     itinerary: [
-                        {
-                            day: '1일차: 월정사 전나무숲길과 발왕산',
-                            timeline: [
-                                { time: '09:00 - 10:20', desc: '청량리역 출발 ➔ 진부(오대산)역 도착' },
-                                { time: '10:30 - 12:30', desc: '오대산 월정사 및 천년고찰 전나무숲길 맨발 산책' },
-                                { time: '12:30 - 13:30', desc: '산나물 정식 또는 황태구이로 점심 식사' },
-                                { time: '13:30 - 17:00', desc: '용평리조트 발왕산 케이블카 탑승 (해발 1,458m 스카이워크)' },
-                                { time: '18:00 ~', desc: '평창 리조트 숙소 체크인 및 휴식' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 대관령 양떼목장 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '대관령 양떼목장 산책 및 먹이 주기 체험' },
-                                { time: '11:30 - 12:30', desc: '평창 메밀국수 점심 식사' },
-                                { time: '13:00 - 14:00', desc: '진부역 이동' },
-                                { time: '14:20 - 15:45', desc: '진부역 출발 ➔ 서울로 귀경' }
-                            ]
-                        }
+                        { day: '1일차: 천년의 숲길 걷기', timeline: [
+                            { time: '11:00 - 12:30', desc: '진부역 도착 후 산채정식으로 든든한 점심' },
+                            { time: '13:30 - 16:30', desc: '오대산 월정사 전나무숲길 맨발 걷기 및 사찰 관람' },
+                            { time: '17:00 - 19:00', desc: '상원사 드라이브 및 평창 한우 숯불구이 저녁' }
+                        ]}, 
+                        { day: '2일차: 알프스 부럽지 않은 초원', timeline: [
+                            { time: '10:00 - 13:00', desc: '대관령 양떼목장 건초 주기 체험 및 능선 산책' },
+                            { time: '13:30 - 14:30', desc: '황태 회냉면 또는 옹심이 칼국수 점심' },
+                            { time: '15:00 - 17:00', desc: '발왕산 케이블카 탑승 및 웅장한 산맥 절경 감상' },
+                            { time: '18:00 - 20:00', desc: '오삼불고기 저녁 식사 및 숙소 휴식' }
+                        ]}, 
+                        { day: '3일차: 올림픽의 열기와 허브', timeline: [
+                            { time: '10:00 - 12:30', desc: '알펜시아 스키점프대 전망대 투어 (동계올림픽의 성지)' },
+                            { time: '13:30 - 15:30', desc: '허브나라 농원 관람 및 허브 꽃밥 점심' },
+                            { time: '16:00 - 17:30', desc: '평창역 출발 ➔ 서울 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 't3',
-                    name: '[온천·휴식] 충남 아산 (온양·도고온천)',
-                    category: 'theme',
-                    theme: '테마: 온천/휴식',
-                    desc: '알칼리성 온천수로 피로를 싹 풀 수 있는 전통적인 온천 휴양 도시.',
-                    distance: 'KTX 천안아산역 약 40분',
-                    transport: 'KTX 또는 장항선 열차 (천안아산역 하차)',
-                    cost: '1박 2일 기준 총 약 11만 ~ 20만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/d97706/ffffff?text=Theme+Spa',
-                    tips: '지중해마을 및 피나클랜드 연계 코스',
-                    budgetBreakdown: 'KTX 왕복: 약 4만 8천 원 | 온천 호텔(1박): 약 6~12만 원 | 온천욕/입장료: 약 2만 원 | 식비: 약 4~6만 원',
+                    id: 't3', name: '[온천] 충남 아산 온양온천', category: 'theme', theme: '테마: 온천',
+                    imageUrl: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '충청남도 아산시 온천동 온양온천',
+                    desc: '왕실이 사랑한 따뜻한 온천수에서 묵은 피로를 씻어내는 3일간의 완벽한 힐링 코스.',
+                    distance: 'KTX 약 40분', transport: 'KTX/SRT (서울역/수서역 ➔ 천안아산역)', cost: '2박 3일 총 20~35만', 
+                    tips: '숙박 시 호텔 내 대온천탕 무제한 이용 패키지를 예약하는 것이 가성비가 좋습니다.', 
+                    budgetBreakdown: '기차/택시: 약 4만 | 온천호텔(2박): 13~18만 | 식비: 8만',
                     itinerary: [
-                        {
-                            day: '1일차: 지중해마을과 온천 힐링',
-                            timeline: [
-                                { time: '09:30 - 10:15', desc: '용산역 또는 광명역 출발 ➔ 천안아산역 도착 (KTX 40분 소요)' },
-                                { time: '10:30 - 12:00', desc: '아산 지중해마을 (유럽풍 이국적 건축물) 산책 및 구경' },
-                                { time: '12:00 - 13:30', desc: '아산 한우 불고기 또는 밀냉면 점심 식사' },
-                                { time: '13:30 - 16:30', desc: '피나클랜드 수목원 산책' },
-                                { time: '18:00 ~', desc: '온양온천 역사 깊은 온천 호텔 체크인 및 온천 사우나 휴식' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 현충사 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '충무공 이순신 장군 유적지 현충사 산책' },
-                                { time: '11:30 - 13:00', desc: '아산 바지락칼국수 점심 식사' },
-                                { time: '13:00 - 14:00', desc: '천안아산역 이동' },
-                                { time: '14:25 - 15:05', desc: '천안아산역 출발 ➔ 용산역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 노곤노곤 온천욕', timeline: [
+                            { time: '14:00 - 15:00', desc: '천안아산역 도착 후 아산 시내로 이동' },
+                            { time: '15:30 - 18:00', desc: '온천 호텔 체크인 후 대온천탕/노천탕 사우나 휴식' },
+                            { time: '18:30 - 20:00', desc: '호텔 인근 전통 시장에서 파전 및 막걸리 저녁' }
+                        ]}, 
+                        { day: '2일차: 꽃과 마을 산책', timeline: [
+                            { time: '10:00 - 12:30', desc: '피나클랜드 수목원 산책 (계절꽃 축제 관람)' },
+                            { time: '13:00 - 14:30', desc: '지중해마을 이동하여 양식/브런치 점심' },
+                            { time: '15:00 - 17:00', desc: '지중해마을 포토존 산책 및 카페 거리 휴식' },
+                            { time: '18:00 - 20:00', desc: '저녁 식사 후 숙소 복귀하여 2차 야간 온천욕' }
+                        ]}, 
+                        { day: '3일차: 조선 시대 엿보기', timeline: [
+                            { time: '10:00 - 12:30', desc: '외암민속마을 돌담길 산책 및 엿 만들기 체험' },
+                            { time: '13:00 - 14:30', desc: '마을 내 저잣거리에서 해물파전과 비빔국수 점심' },
+                            { time: '15:00 - 15:40', desc: '천안아산역 출발 ➔ 서울 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 't4',
-                    name: '[섬·일몰] 전남 신안 (자은도·퍼플섬)',
-                    category: 'theme',
-                    theme: '테마: 섬/일몰',
-                    desc: '보라색으로 물든 아름다운 다리와 아기자기한 섬 풍경, 환상적인 일몰을 볼 수 있는 곳.',
-                    distance: '목포역 KTX 후 차량 이동 (총 약 3시간 반)',
-                    transport: 'KTX (목포역) ➔ 렌터카 또는 시외버스',
-                    cost: '1박 2일 기준 총 약 18만 ~ 32만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/7c3aed/ffffff?text=Theme+Island',
-                    tips: '퍼플 의상 착용 시 입장료 무료 이벤트 확인',
-                    budgetBreakdown: 'KTX 왕복: 약 10만 6천 원 | 숙박(1박): 약 7~16만 원 | 렌트/교통: 약 4만 원 | 식비: 약 6~9만 원',
+                    id: 't4', name: '[섬] 신안 퍼플섬', category: 'theme', theme: '테마: 섬',
+                    imageUrl: 'image_1747cb.jpg',
+                    mapQuery: '전라남도 신안군 안좌면 소곡리 퍼플교',
+                    desc: '온통 보라색으로 물든 동화 같은 두 섬을 잇는 보랏빛 다리를 건너는 마법 같은 3일.',
+                    distance: 'KTX + 차량 약 4시간', transport: 'KTX (용산역 ➔ 목포역) + 현지 렌터카/택시', cost: '2박 3일 총 35~50만', 
+                    tips: '보라색 옷, 모자, 우산, 신발 중 하나를 착용하면 퍼플섬 입장료가 전액 무료입니다.', 
+                    budgetBreakdown: 'KTX 왕복: 약 10만 | 렌터카: 10만 | 숙박: 15만 | 식비: 10만',
                     itinerary: [
-                        {
-                            day: '1일차: 보라빛 퍼플섬과 환상적인 일몰',
-                            timeline: [
-                                { time: '08:00 - 10:35', desc: '용산역 출발 ➔ 목포역 도착 (KTX 2시간 35분 소요)' },
-                                { time: '10:40 - 12:00', desc: '목포역 인근에서 남도 백반 또는 낙지 비빔밥 점심' },
-                                { time: '12:00 - 13:30', desc: '렌터카 인수 후 신안 자은도/안좌도 퍼플섬으로 이동' },
-                                { time: '13:30 - 17:30', desc: '반월·박지도 퍼플교 건너기 및 온통 보라색인 마을 탐방' },
-                                { time: '18:00 ~', desc: '자은도 오션뷰 리조트 체크인 및 서해안 낙조 감상 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 무한의 다리 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '자은도 무한의 다리 산책 (섬과 섬을 잇는 아름다운 해상 보행교)' },
-                                { time: '11:30 - 13:00', desc: '신안 낙지 전문점에서 연포탕 점심 식사' },
-                                { time: '13:00 - 14:30', desc: '목포역으로 이동하여 렌터카 반납' },
-                                { time: '15:10 - 17:45', desc: '목포역 출발 ➔ 용산역 도착 후 귀가' }
-                            ]
-                        }
+                        { day: '1일차: 목포의 맛과 멋', timeline: [
+                            { time: '11:00 - 13:30', desc: '용산역 출발 ➔ 목포역 도착 및 렌터카 인수' },
+                            { time: '14:00 - 15:30', desc: '목포 해산물 백반 또는 낙지탕탕이 점심' },
+                            { time: '16:00 - 18:30', desc: '목포 해상케이블카 (국내 최장) 탑승 및 유달산 일몰' },
+                            { time: '19:00 - 20:30', desc: '평화광장 바다 분수쇼 관람 및 저녁 식사' }
+                        ]}, 
+                        { day: '2일차: 보랏빛 동화 속으로', timeline: [
+                            { time: '09:30 - 11:00', desc: '천사대교를 건너 신안 안좌도(퍼플섬 입구)로 드라이브' },
+                            { time: '11:30 - 14:30', desc: '반월도·박지도 퍼플교 도보 횡단 및 보라색 마을 투어' },
+                            { time: '15:00 - 16:30', desc: '퍼플섬 내 식당에서 마을 정식 늦은 점심' },
+                            { time: '17:30 - 19:30', desc: '목포로 복귀하여 홍어삼합 또는 갈치조림 저녁' }
+                        ]}, 
+                        { day: '3일차: 레트로 근대 역사 탐방', timeline: [
+                            { time: '10:00 - 12:30', desc: '목포 근대역사관 (호텔 델루나 촬영지) 및 시화골목 산책' },
+                            { time: '13:00 - 14:30', desc: '유명 빵집(코롬방 제과) 새우바게트 구매 및 짜장면 점심' },
+                            { time: '15:30 - 18:00', desc: '렌터카 반납 후 목포역 출발 ➔ 용산 귀가' }
+                        ]}
                     ]
                 },
                 {
-                    id: 't5',
-                    name: '[캠핑·자연] 가평 자라섬 & 북한강',
-                    category: 'theme',
-                    theme: '테마: 캠핑/자연',
-                    desc: '서울에서 가장 접근하기 좋은 캠핑과 강변 피크닉의 메카.',
-                    distance: '경춘선 가평역 약 1시간',
-                    transport: 'ITX-청춘 또는 경춘선 지하철 (가평역 하차)',
-                    cost: '1박 2일 기준 총 약 7만 ~ 15만 원 (1인 기준)',
-                    image: 'https://placehold.co/600x400/0d9488/ffffff?text=Theme+Camping',
-                    tips: '자라섬 남도 꽃정원 시즌별 축제 방문',
-                    budgetBreakdown: '경춘선 지하철/ITX: 약 6천 원 | 캠핑장/펜션(1박): 약 4~10만 원 | 도보/택시: 약 1만 원 | 식비: 약 4~6만 원',
+                    id: 't5', name: '[캠핑] 가평 자라섬', category: 'theme', theme: '테마: 캠핑',
+                    imageUrl: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=800&q=80',
+                    mapQuery: '경기도 가평군 가평읍 자라섬로 60 자라섬',
+                    desc: '북한강의 물안개와 풀벌레 소리가 가득한 대자연 속 프라이빗 오토캠핑 2박 3일.',
+                    distance: 'ITX 약 1시간', transport: 'ITX-청춘 (용산역 ➔ 가평역)', cost: '2박 3일 총 20~35만', 
+                    tips: '자라섬 오토캠핑장은 장비 렌탈존이나 카라반이 있어 초보자도 쉽게 캠핑을 즐길 수 있습니다.', 
+                    budgetBreakdown: 'ITX: 1.5만 | 캠핑장(카라반 2박): 15만 | 장보기/고기: 15만',
                     itinerary: [
-                        {
-                            day: '1일차: 자라섬 남도 피크닉',
-                            timeline: [
-                                { time: '10:00 - 11:00', desc: '청량리역 또는 상봉역 출발 ➔ 가평역 도착 (경춘선 1시간 소요)' },
-                                { time: '11:00 - 12:30', desc: '가평 잣국수 또는 닭갈비로 점심 식사' },
-                                { time: '12:30 - 16:30', desc: '자라섬 서도 및 남도 꽃정원 자전거 대여 후 산책' },
-                                { time: '16:30 - 18:00', desc: '가평 레저카트 체험 또는 북한강변 산책' },
-                                { time: '18:00 ~', desc: '자라섬 오토캠핑장 또는 북한강 리버뷰 숙소 체크인 후 바비큐 저녁' }
-                            ]
-                        },
-                        {
-                            day: '2일차: 남이섬 인근 및 귀경',
-                            timeline: [
-                                { time: '09:30 - 11:30', desc: '남이섬 선착장 주변 강변 산책 및 감성 카페 방문' },
-                                { time: '11:30 - 13:00', desc: '민물 매운탕 또는 막국수 점심 식사' },
-                                { time: '13:00 - 14:00', desc: '가평역 이동' },
-                                { time: '14:20 - 15:20', desc: '가평역 출발 ➔ 서울로 귀경' }
-                            ]
-                        }
+                        { day: '1일차: 캠핑의 꽃, 불멍과 바비큐', timeline: [
+                            { time: '13:00 - 14:00', desc: '용산역 ➔ 가평역 도착 후 인근 마트에서 캠핑 장보기' },
+                            { time: '15:00 - 17:00', desc: '자라섬 캠핑장 체크인, 텐트 피칭(또는 카라반 입실) 및 휴식' },
+                            { time: '17:30 - 20:00', desc: '야외 숯불 바비큐 파티 (삼겹살, 마시멜로 구이)' },
+                            { time: '20:30 ~', desc: '별자리 관측 및 장작불(불멍) 타임' }
+                        ]}, 
+                        { day: '2일차: 꽃 정원과 강바람 자전거', timeline: [
+                            { time: '09:00 - 10:30', desc: '캠핑용 모닝 커피 및 라면/샌드위치 아침' },
+                            { time: '11:00 - 14:00', desc: '자라섬 남도 꽃정원 도보 산책 및 피크닉' },
+                            { time: '14:30 - 16:30', desc: '자전거 대여하여 북한강 자전거길 라이딩' },
+                            { time: '17:00 - 19:30', desc: '가평 잣 두부 전골로 건강한 저녁 식사 후 캠핑장 복귀' }
+                        ]}, 
+                        { day: '3일차: 레일바이크와 잣 닭갈비', timeline: [
+                            { time: '10:00 - 11:30', desc: '캠핑장 체크아웃 및 짐 정리' },
+                            { time: '12:00 - 13:30', desc: '가평 레일바이크 탑승 (북한강 철교 횡단)' },
+                            { time: '14:00 - 15:30', desc: '철판 닭갈비 점심 식사' },
+                            { time: '16:00 - 17:00', desc: '가평역 출발 ➔ 서울 귀가' }
+                        ]}
                     ]
                 }
             ]
@@ -769,31 +652,25 @@
 
         let currentCategory = 'steady';
 
-        // Initialize display on load
         window.onload = function() {
             renderDestinations(currentCategory);
         };
 
-        // Switch Tab Handler
         function switchTab(category) {
             currentCategory = category;
-            
-            // Update Tab button styles
             const tabs = ['steady', 'hot', 'quiet', 'theme'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
                 if (t === category) {
-                    btn.className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white text-blue-600 tab-active";
+                    btn.className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white text-blue-600 tab-active transform scale-105";
                 } else {
                     btn.className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-white/10 text-white hover:bg-white/20";
                 }
             });
-
             document.getElementById('searchInput').value = '';
             renderDestinations(category);
         }
 
-        // Render Destinations Grid
         function renderDestinations(category, searchQuery = '') {
             const grid = document.getElementById('destinationsGrid');
             let data = travelData[category] || [];
@@ -807,7 +684,7 @@
                 );
             }
 
-            document.getElementById('resultCount').innerText = `총 ${data.length}개 여행지 표시 중`;
+            document.getElementById('resultCount').innerText = `총 ${data.length}개 2박 3일 코스 표시 중`;
 
             if (data.length === 0) {
                 grid.innerHTML = `
@@ -819,21 +696,68 @@
                 return;
             }
 
+            function getCardGraphic(item) {
+                let bgClass = 'from-blue-400 to-blue-500';
+                let iconPath = '';
+                const theme = item.theme;
+
+                if (theme.includes('바다') || theme.includes('해변') || theme.includes('섬') || theme.includes('도시')) {
+                    bgClass = 'from-sky-500 to-blue-600'; // 파란색 (바다)
+                    iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 14l-2-7h16l-2 7m-12 0h12M10 7V4h4v3M3 18c2.5 0 3.5 1.5 6 1.5s3.5-1.5 6-1.5 3.5 1.5 6 1.5"/>';
+                } else if (theme.includes('산') || theme.includes('자연') || theme.includes('휴식') || theme.includes('호수')) {
+                    bgClass = 'from-emerald-500 to-teal-600'; // 초록색 (산/자연)
+                    iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h16M5 20L11 8l3 5 4-4 3 11"/>';
+                } else if (theme.includes('역사') || theme.includes('문화')) {
+                    bgClass = 'from-amber-500 to-orange-500'; // 주황색 (전통/역사)
+                    iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h16M4 16h16M5 16V9m14 7V9M3 9l9-5 9 5M9 20v-4m6 4v-4M8 16h8"/>';
+                } else if (theme.includes('캠핑')) {
+                    bgClass = 'from-green-500 to-emerald-600'; // 진녹색 (캠핑)
+                    iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 20h20L12 4 2 20zm10-16v16m-3-4l3-4 3 4"/>';
+                } else if (theme.includes('온천')) {
+                    bgClass = 'from-rose-500 to-pink-600'; // 핑크색 (온천)
+                    iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h16a2 2 0 002-2v-2a2 2 0 00-2-2H4a2 2 0 00-2 2v2a2 2 0 002 2zM8 14v-4m4 4V8m4 6V6"/>';
+                } else {
+                    bgClass = 'from-indigo-500 to-purple-600'; // 보라색 (기타/트렌드)
+                    iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>';
+                }
+                return { bgClass, iconPath };
+            }
+
             let html = '';
             data.forEach(item => {
+                const style = getCardGraphic(item);
+
                 html += `
-                    <div onclick="openModal('${item.id}')" class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col group">
-                        <div class="relative h-48 overflow-hidden bg-slate-100">
-                            <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/600x400/e2e8f0/64748b?text=Image+Ready'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <span class="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow">${item.theme}</span>
+                    <div onclick="openModal('${item.id}')" class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col group hover:-translate-y-1">
+                        <!-- 이미지 대신 그라데이션, 화이트 벡터 아이콘, 타이틀 적용 -->
+                        <div class="relative h-56 flex flex-col items-center justify-center bg-gradient-to-br ${style.bgClass} text-white p-6 overflow-hidden">
+                            <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            
+                            <!-- 상단 뱃지 -->
+                            <span class="absolute top-4 left-4 bg-black/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm z-10">${item.theme}</span>
+                            
+                            <!-- 테마 아이콘 -->
+                            <svg class="w-16 h-16 mb-4 text-white drop-shadow-md transform transition-transform group-hover:scale-110 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                ${style.iconPath}
+                            </svg>
+                            
+                            <!-- 여행지 이름 -->
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-center drop-shadow-lg tracking-tight leading-snug px-2 break-keep">${item.name}</h3>
+                            
+                            <!-- 호버 시 지도 보기 버튼 -->
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[2px] z-20">
+                                <span class="bg-white text-slate-800 font-bold px-5 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-sm transform transition-transform group-hover:scale-105">
+                                    <span class="text-blue-600">🗺️</span> 일정 및 지도 보기
+                                </span>
+                            </div>
                         </div>
-                        <div class="p-5 flex flex-col flex-grow">
-                            <h3 class="text-lg font-bold text-slate-900 mb-2">${item.name}</h3>
-                            <p class="text-slate-600 text-sm mb-4 line-clamp-2">${item.desc}</p>
-                            <div class="mt-auto pt-4 border-t border-slate-100 space-y-1.5 text-xs text-slate-500 font-medium">
-                                <div class="flex items-center gap-1.5"><span>⏱️</span> 소요시간: ${item.distance}</div>
-                                <div class="flex items-center gap-1.5 truncate"><span>🚆</span> 교통편: ${item.transport}</div>
-                                <div class="flex items-center gap-1.5 text-blue-600 font-semibold"><span>💰</span> 총 예상비용: ${item.cost}</div>
+                        
+                        <!-- 하단 상세 설명 -->
+                        <div class="p-5 flex flex-col flex-grow relative bg-white">
+                            <p class="text-slate-600 text-sm mb-4 line-clamp-2 leading-relaxed font-medium">${item.desc}</p>
+                            <div class="mt-auto pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-500 font-medium">
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg"><span>⏱️</span> 소요: ${item.distance}</div>
+                                <div class="flex items-center gap-2 bg-blue-50/50 p-2 rounded-lg text-blue-700 font-bold"><span>💰</span> 총 예산: ${item.cost}</div>
                             </div>
                         </div>
                     </div>
@@ -842,13 +766,11 @@
             grid.innerHTML = html;
         }
 
-        // Filter input handler
         function filterDestinations() {
             const query = document.getElementById('searchInput').value;
             renderDestinations(currentCategory, query);
         }
 
-        // Modal Open Handler
         function openModal(id) {
             let found = null;
             for (let key in travelData) {
@@ -861,20 +783,19 @@
 
             if (!found) return;
 
-            // Generate detailed itinerary timeline HTML
             let itineraryHtml = '';
             if (found.itinerary && found.itinerary.length > 0) {
                 found.itinerary.forEach(dayPlan => {
                     itineraryHtml += `
-                        <div class="mb-4">
-                            <h5 class="font-bold text-slate-800 text-sm mb-2 pb-1 border-b border-blue-200">📌 ${dayPlan.day}</h5>
-                            <div class="space-y-2">
+                        <div class="mb-5 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                            <h5 class="font-extrabold text-indigo-700 text-sm mb-3 pb-2 border-b border-indigo-50 flex items-center gap-2">🗓️ ${dayPlan.day}</h5>
+                            <div class="space-y-3">
                     `;
                     dayPlan.timeline.forEach(t => {
                         itineraryHtml += `
-                            <div class="flex items-start text-xs sm:text-sm gap-3">
-                                <span class="font-semibold text-blue-600 min-w-[95px] bg-blue-50 px-2 py-0.5 rounded text-center">${t.time}</span>
-                                <span class="text-slate-700">${t.desc}</span>
+                            <div class="flex items-start text-xs sm:text-sm gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                                <span class="font-bold text-blue-600 min-w-[100px] sm:min-w-[120px] bg-blue-50/50 px-2.5 py-1 rounded-md text-center shadow-sm border border-blue-100">${t.time}</span>
+                                <span class="text-slate-700 font-medium pt-1">${t.desc}</span>
                             </div>
                         `;
                     });
@@ -885,61 +806,104 @@
                 });
             }
 
+            // 모달창의 인터랙티브 지도는 해당 지역을 자세히 보여주기 위해 z=13 사용
+            const interactiveMapIframe = `<iframe id="modalMapIframe" class="w-full h-full object-cover transition-all duration-300" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?q=${encodeURIComponent(found.mapQuery)}&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>`;
+
             const modalContent = document.getElementById('modalContent');
             modalContent.innerHTML = `
-                <div class="relative h-48 rounded-xl overflow-hidden mb-4 bg-slate-100">
-                    <img src="${found.image}" alt="${found.name}" class="w-full h-full object-cover">
-                    <span class="absolute top-3 left-3 bg-blue-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">${found.theme}</span>
+                <div id="mapContainer" class="relative h-64 sm:h-72 rounded-xl overflow-hidden mb-5 bg-slate-100 shadow-inner transition-all duration-300 z-10 group">
+                    ${interactiveMapIframe}
+                    <span id="themeBadge" class="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-md z-10 pointer-events-none">${found.theme}</span>
+                    
+                    <!-- 전체 화면 지도 토글 버튼 -->
+                    <button onclick="toggleMapFullscreen()" class="absolute bottom-4 right-4 bg-slate-900/85 hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-lg z-20 text-sm font-bold transition-all duration-300 flex items-center gap-2 backdrop-blur-sm border border-white/10 hover:scale-105">
+                        <span id="expandIcon" class="text-lg leading-none">⛶</span> <span id="expandText">지도 크게 보기</span>
+                    </button>
+                    
+                    <!-- 인터랙티브 지도 안내 -->
+                    <div class="absolute top-4 right-4 bg-white/80 backdrop-blur text-xs font-bold px-2 py-1 rounded-md text-slate-500 pointer-events-none z-10">드래그하여 주변 탐색 가능</div>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-900 mb-2">${found.name}</h3>
-                <p class="text-slate-600 text-sm mb-4 leading-relaxed">${found.desc}</p>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">${found.name} (2박 3일 플랜)</h3>
+                <p class="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed font-medium bg-slate-50 p-4 rounded-xl border border-slate-100">${found.desc}</p>
                 
-                <div class="bg-slate-50 rounded-xl p-4 space-y-2.5 text-xs sm:text-sm mb-6 border border-slate-200">
-                    <div class="flex items-start gap-2">
-                        <span class="font-bold text-slate-700 min-w-[80px]">📍 거리/소요:</span>
-                        <span class="text-slate-700">${found.distance}</span>
+                <div class="bg-indigo-50/50 rounded-xl p-5 space-y-3 text-xs sm:text-sm mb-6 border border-indigo-100">
+                    <div class="flex items-start gap-3">
+                        <span class="font-bold text-indigo-900 min-w-[80px]">📍 맵 좌표:</span>
+                        <span class="text-slate-700 font-medium">${found.mapQuery}</span>
                     </div>
-                    <div class="flex items-start gap-2">
-                        <span class="font-bold text-slate-700 min-w-[80px]">🚗 교통편:</span>
-                        <span class="text-slate-700">${found.transport}</span>
+                    <div class="flex items-start gap-3">
+                        <span class="font-bold text-indigo-900 min-w-[80px]">🚗 교통편:</span>
+                        <span class="text-slate-700 font-medium">${found.transport} (${found.distance})</span>
                     </div>
-                    <div class="flex items-start gap-2">
-                        <span class="font-bold text-slate-700 min-w-[80px]">💳 총 예상비용:</span>
-                        <span class="text-blue-600 font-bold">${found.cost}</span>
+                    <div class="flex items-start gap-3">
+                        <span class="font-bold text-indigo-900 min-w-[80px]">💳 총 비용:</span>
+                        <span class="text-blue-700 font-extrabold bg-white px-2 py-0.5 rounded shadow-sm border border-blue-100">${found.cost}</span>
                     </div>
-                    <div class="flex items-start gap-2 pt-2 border-t border-slate-200">
-                        <span class="font-bold text-slate-700 min-w-[80px]">📊 예산 내역:</span>
-                        <span class="text-slate-700 text-xs">${found.budgetBreakdown}</span>
+                    <div class="flex items-start gap-3 pt-3 border-t border-indigo-100/50 mt-2">
+                        <span class="font-bold text-indigo-900 min-w-[80px]">📊 예산 내역:</span>
+                        <span class="text-slate-700 text-xs leading-relaxed">${found.budgetBreakdown}</span>
                     </div>
-                    <div class="flex items-start gap-2 pt-2 border-t border-slate-200">
-                        <span class="font-bold text-slate-700 min-w-[80px]">💡 여행 팁:</span>
-                        <span class="text-emerald-700 font-medium">${found.tips}</span>
+                    <div class="flex items-start gap-3 pt-3 border-t border-indigo-100/50 mt-2">
+                        <span class="font-bold text-indigo-900 min-w-[80px]">💡 여행 팁:</span>
+                        <span class="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">${found.tips}</span>
                     </div>
                 </div>
 
-                <!-- Detailed Hourly Itinerary Section -->
-                <div class="bg-white rounded-xl p-4 border border-slate-200 mb-6 shadow-sm">
-                    <h4 class="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
-                        <span>🕒 구체적인 1박 2일 타임라인 일정</span>
+                <div class="mb-6">
+                    <h4 class="font-extrabold text-slate-900 text-base mb-4 flex items-center gap-2">
+                        <span class="bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">🕒</span> 
+                        2박 3일 구체적 타임라인
                     </h4>
                     ${itineraryHtml}
                 </div>
 
-                <button onclick="closeModal()" class="w-full bg-slate-900 text-white font-semibold py-2.5 rounded-xl text-sm hover:bg-slate-800 transition-colors">확인</button>
+                <button onclick="closeModal()" class="w-full bg-gradient-to-r from-slate-700 to-slate-900 text-white font-bold py-3.5 rounded-xl text-sm hover:from-slate-800 hover:to-black shadow-lg transform hover:-translate-y-0.5 transition-all">지도 및 일정 확인 완료</button>
             `;
 
-            document.getElementById('detailModal').classList.remove('hidden');
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.firstElementChild.classList.add('scale-100');
+            }, 10);
         }
 
-        // Modal Close Handler
         function closeModal() {
-            document.getElementById('detailModal').classList.add('hidden');
+            const modal = document.getElementById('detailModal');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.firstElementChild.classList.remove('scale-95');
+                document.getElementById('modalContent').innerHTML = '';
+            }, 200);
         }
 
-        // Close modal on background click
+        function toggleMapFullscreen() {
+            const mapContainer = document.getElementById('mapContainer');
+            const expandText = document.getElementById('expandText');
+            const expandIcon = document.getElementById('expandIcon');
+            const closeBtn = document.querySelector('.bg-slate-100.rounded-full.z-20');
+
+            if (mapContainer.classList.contains('fixed')) {
+                // 원래 크기로 축소 (모달 내장)
+                mapContainer.className = 'relative h-64 sm:h-72 rounded-xl overflow-hidden mb-5 bg-slate-100 shadow-inner transition-all duration-300 z-10 group';
+                expandText.innerText = '지도 크게 보기';
+                expandIcon.innerText = '⛶';
+                closeBtn.style.display = 'flex'; // 모달 닫기 버튼 다시 표시
+            } else {
+                // 전체화면 모드로 확장 (화면 꽉 차게)
+                mapContainer.className = 'fixed inset-0 z-[100] h-[100dvh] w-[100vw] bg-slate-100 transition-all duration-300 m-0 p-0 rounded-none';
+                expandText.innerText = '지도 축소하기';
+                expandIcon.innerText = '✖';
+                closeBtn.style.display = 'none'; // 전체화면 중엔 모달 닫기 버튼 숨김
+            }
+        }
+
+        // 배경 클릭 시 모달 닫기
         window.onclick = function(event) {
             const modal = document.getElementById('detailModal');
-            if (event.target === modal) {
+            // 전체화면 맵 상태가 아닐 때만 배경 클릭으로 닫힘
+            if (event.target === modal && !document.getElementById('mapContainer').classList.contains('fixed')) {
                 closeModal();
             }
         }
